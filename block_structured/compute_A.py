@@ -17,7 +17,7 @@ def A_matrix_anisotropic( img_size, wavelet, level, kspace_loc ):
     Parameters
     ----------
     img_size: integer
-        Image size
+        Image size, a power of 2
     wavelet: string
         The type of wavelet; the wavelet transform should be an orthogonal transform
     level: integer
