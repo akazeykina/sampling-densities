@@ -71,3 +71,31 @@ def nrmse( sim, obs ):
     metrics = np.sqrt( np.mean( np.abs( sim - obs ) **2 ) ) / ( o_max - o_min )
     
     return metrics
+
+def reduce_img_size( img_size, image ):
+    """
+    Reduce the size of the image (keep only low Fourier frequencies)
+    
+    Parameters
+    ----------    
+    img_size: int
+        desired size of the image (typically power of 2)
+    image: 2D ndarray
+        the image to shrink
+        
+    Returns
+    -------
+    2D ndarray
+        image of size img_size x img_size
+    
+    """
+    
+    mid = image.shape[ 0 ] // 2
+    
+    f_coef = np.fft.fftshift( np.fft.fft2( image ) )
+    
+    reduced_coef = f_coef[ mid - img_size // 2: mid + img_size // 2, mid - img_size // 2: mid + img_size // 2 ]
+    
+    reduced_image = np.fft.ifft2( np.fft.fftshift( reduced_coef ) )
+    
+    return np.abs( reduced_image )
