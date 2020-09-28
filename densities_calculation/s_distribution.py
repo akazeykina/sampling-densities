@@ -15,7 +15,7 @@ from mri.operators import WaveletN
 
 from densities_calculation.utils import wav_coef_array_to_matrix, reduce_img_size
 
-def s_distribution( img_size, filename, wavelet, level, sparsity ):
+def s_distribution( img_size, im, wavelet, level, sparsity ):
     """
     Calculate the vector s of the numbers of nonzero wavelet coefficients per subband
     
@@ -23,8 +23,9 @@ def s_distribution( img_size, filename, wavelet, level, sparsity ):
     ----------
     img_size: integer
         size of the image (power of 2)
-    filename: string
-        name of the file containing the image from which the vector s is computed
+    im: string or ndarray
+        name of the file containing the image from which the vector s is computed or
+        the image itself
     wavelet: string
         wavelet type (orthogonal transform)
     level: integer
@@ -47,7 +48,10 @@ def s_distribution( img_size, filename, wavelet, level, sparsity ):
     
     matr = np.zeros( ( img_size, img_size ), dtype = "complex128" )
     
-    image = io.imread( filename, as_gray = True )
+    if type( im ) == str:
+        image = io.imread( im, as_gray = True )
+    else:
+        image = im
             
     coeffs = linear_op.op( image )
     matr = wav_coef_array_to_matrix( coeffs, level )
