@@ -12,7 +12,7 @@ import numpy as np
 
 from mri.operators import WaveletN
 
-from utils import wav_coef_array_to_matrix
+from densities_calculation.utils import wav_coef_array_to_matrix
 
 def s_distribution( img_size, filename, wavelet, level, sparsity ):
     """
