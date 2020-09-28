@@ -8,11 +8,12 @@ Created on Tue Apr 14 14:17:37 2020
 
 from skimage import io
 import numpy as np
+import nibabel as nib
 
 
 from mri.operators import WaveletN
 
-from densities_calculation.utils import wav_coef_array_to_matrix
+from densities_calculation.utils import wav_coef_array_to_matrix, reduce_img_size
 
 def s_distribution( img_size, filename, wavelet, level, sparsity ):
     """
@@ -71,3 +72,45 @@ def s_distribution( img_size, filename, wavelet, level, sparsity ):
     
     return S
 
+def avg_s_distribution( img_size, fname, wavelet, level, sparsity ):
+    """
+    Calculate the averaged vector s of the numbers of nonzero wavelet coefficients per subband
+    
+    Parameters
+    ----------
+    img_size: integer
+        size of the image (power of 2)
+    fname: string
+        name of the file from oasis dataset containing the images from which the vector s is computed
+        (10 slices are chosen from the 'middle' of the volume)
+    wavelet: string
+        wavelet type (orthogonal transform)
+    level: integer
+        level of the wavelet transform
+    sparsity: float
+        portion of coefficients that are considered to be nonzero (between 0.0 and 1.0)
+        
+    Returns
+    -------
+    ndarray
+        a tri-diagonal matrix of size (level+1, level+1) containing the number of nonzero 
+        wavelet coefficients per subband;
+        s[0,0] corresponds to the approximation part, the lower diagonal to the vertical details, 
+        the upper diagonal to the horizontal details, the main diagonal to the diagonal details
+    """
+    
+
+    images = nib.load( fname )
+    images = images.get_fdata()
+    num_img = images.shape[ 0 ]
+    
+    S = np.zeros( ( level + 1, level + 1 ) )
+    
+    for j in range( 10 ):
+
+        S += s_distribution( img_size, 
+            reduce_img_size( img_size, images[ num_img // 2 - 25 + 5 * j, :, : ] ), wavelet, level, sparsity ) 
+        
+    S /= 10
+    
+    return S
