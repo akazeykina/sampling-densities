@@ -10,10 +10,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 
-from utils import wav_coef_array_to_matrix
-from s_distribution import s_distribution
-from compute_A import A_matrix_anisotropic
-from mask import compute_mask
+from densities_calculation.utils import wav_coef_array_to_matrix
+from densities_calculation.s_distribution import s_distribution
+from densities_calculation.compute_A import A_matrix_anisotropic
+from densities_calculation.mask import compute_mask
 
 def calculate_pi_blocks( img_size, A, level, s_distrib, blocks_list, scheme_type ):
     """
@@ -132,6 +132,47 @@ def calculate_pi_blocks( img_size, A, level, s_distrib, blocks_list, scheme_type
 
     return pi_th, pi_l
 
+def pi_rad( decay, cutoff, im_size ):
+    """
+    Calculate radial density that is a power decay function |x|^{-d} with cutoff 
+    Code adapted from CSMRI_sparkling generate_density function; works for square images only
+    
+    Parameters
+    ----------
+    decay: real
+        d (positive)
+    cutoff: real
+        percentage of kspace where pi_rad is constant (between 0.0 and 1.0)
+    im_size: ndarray
+        array np.array( [ img_size, img_size ] ) where img_size is the size of the image
+    
+    Returns
+    -------
+    pi_rad: ndarray
+        radial density, array of shape im_size
+    """
+        
+    grid_lines = [ np.linspace( -size / 2 + 0.5, size / 2 - 0.5, size ) for size in im_size ]
+    
+    grid = np.meshgrid( *grid_lines, indexing = 'ij' )
+    
+    norm = np.sqrt( np.sum( np.power( grid, 2 ), axis = 0 ) )
+    
+    density = np.power( norm, -decay )
+    
+    mid_im_size = im_size / 2
+    
+    
+    ind = tuple( im_size // 2 + ( im_size * cutoff // 2 ).astype( 'int' ) - 1 )
+    
+    density[ norm < norm[ ind ] ] = density[ ind ] 
+    
+    density[ norm > mid_im_size[ 0 ] ] = 0 
+    
+    density = density / ( np.sum( density ) )
+    
+    return density
+
 if __name__ == "__main__":
     
     img_size = 64
@@ -140,7 +181,7 @@ if __name__ == "__main__":
     scheme_type = 'cartesian'
     
     sparsity = 0.1 # sparsity level: assume that only s = 'sparsity' wavelets coefficients are non zero
-    fname = 'brain_phantom/BrainPhantom'+str(img_size)+'.png' # image for computing s distribution
+    fname = '../brain_images/BrainPhantom'+str(img_size)+'.png' # image for computing s distribution
     
     sub_sampling_rate = 0.4
 ####### Distribution of sparsity coefficients
