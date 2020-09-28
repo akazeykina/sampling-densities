@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 from densities_calculation.mask import compute_mask
 from densities_calculation.s_distribution import avg_s_distribution
+from densities_calculation.calculate_densities import pi_rad
 
 
 
@@ -36,8 +37,8 @@ print( s_distrib )
 #pi_inf_flattened, pi_th_flattened, pi_th_new_flattened, pi_l_flattened = calculate_pi(
 #        img_size, wavelet, level, s_distrib )
 #
-######## Compute pi radial
-#pi_rad = pi_rad( 6, 0.12, np.array( [ img_size, img_size ] ) )
+####### Compute pi radial
+pi_rad = pi_rad( 2, 0.2, np.array( [ img_size, img_size ] ) )
 #
 #
 ####### Compute masks
