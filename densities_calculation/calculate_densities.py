@@ -8,7 +8,6 @@ Created on Fri Apr 24 17:48:13 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy
 
 from densities_calculation.utils import wav_coef_array_to_matrix
 from densities_calculation.s_distribution import s_distribution
