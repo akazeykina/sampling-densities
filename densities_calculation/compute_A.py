@@ -7,6 +7,7 @@ Created on Tue Apr 21 10:19:11 2020
 """
 
 import numpy as np
+import scipy
 
 from mri.operators import WaveletN, NonCartesianFFT 
 
@@ -55,10 +56,39 @@ def A_matrix_anisotropic( img_size, wavelet, level, kspace_loc ):
     
     return A
 
+def compute_pseudoinv_A( A, scheme_type, cond = 0.0, lam = 0.0 ):
+    """
+    Calculate the pseudoinverse of A
     
+    Parameters
+    ----------
+    A: ndarray
+        2d matrix
+    scheme_type: string
+        type of sampling scheme (if 'cartesian' then the calculation of pseudoinverse is simplified)
+    cond: float
+        parameter cond of scipy.linalg.pinv2 (for using regularisation via discarding small svd values)
+    lam: float
+        parameter of Tikhonov regularisation for inverting A^*A
+        
+    Returns
+    -------
+    np.ndarray
+        The pseudoinverse of A
     
+    """
     
+    print("Calculating pseudoinverse")
+    if scheme_type == 'cartesian':
+        pseudo_inv_A = np.conj( A.T )
+    else:
+        pseudo_inv_A = scipy.linalg.pinv2( A )  
+        #A_conj = np.conj( A.T )
+        #inv = scipy.linalg.pinvh( np.dot( A_conj, A ) )
+        #pseudo_inv_A = np.dot( inv, A_conj )
+    print("End of calculation of pseudoinverse")
     
+    return pseudo_inv_A
     
     
     

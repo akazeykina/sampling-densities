@@ -12,10 +12,10 @@ import scipy
 
 from densities_calculation.utils import wav_coef_array_to_matrix
 from densities_calculation.s_distribution import s_distribution
-from densities_calculation.compute_A import A_matrix_anisotropic
+from densities_calculation.compute_A import A_matrix_anisotropic, compute_pseudoinv_A
 from densities_calculation.mask import compute_mask
 
-def calculate_pi_blocks( img_size, A, level, s_distrib, blocks_list, scheme_type ):
+def calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, blocks_list ):
     """
     Calculate pi_theta, pi_lambda in the block-structured anisotropic setting
     
@@ -25,6 +25,8 @@ def calculate_pi_blocks( img_size, A, level, s_distrib, blocks_list, scheme_type
         size of the image (power of 2)
     A: ndarray
         matrix of measurements (complex-valued) A = F Psi^*
+    pseudo_inv_A: ndarray
+        pseudoinverse of A (complex-valued) psinv(A) = ( A^* A )^{-1} A^*
     level: integer
         level of the wavelet transform
     s_distrib: ndarray
@@ -32,8 +34,6 @@ def calculate_pi_blocks( img_size, A, level, s_distrib, blocks_list, scheme_type
         wavelet coefficients per subband
     blocks_list: list
         list of lists of row numbers corresponding to blocks of measurements
-    scheme_type: string
-        type of sampling scheme (if 'cartesian' then the calculation of pseudoinverse is simplified)
     
     Returns
     -------
@@ -47,16 +47,6 @@ def calculate_pi_blocks( img_size, A, level, s_distrib, blocks_list, scheme_type
 
     pi_th = np.zeros( ( len( blocks_list ), 1 ) )
     pi_l = np.zeros( ( len( blocks_list ), 1 ) )
-    
-    print("Calculating pseudoinverse")
-    if scheme_type == 'cartesian':
-        pseudo_inv_A = np.conj( A.T )
-    else:
-        pseudo_inv_A = scipy.linalg.pinv2( A )  
-        #A_conj = np.conj( A.T )
-        #inv = scipy.linalg.pinvh( np.dot( A_conj, A ) )
-        #pseudo_inv_A = np.dot( inv, A_conj )
-    print("End of calculation of pseudoinverse")
     
     block_num = 0
     for block in blocks_list:
@@ -263,7 +253,10 @@ if __name__ == "__main__":
     print( "Size of pi:", img_size**2 )    
     
     A = A_matrix_anisotropic( img_size, wavelet, level, kspace_loc )
-    pi_th, pi_l = calculate_pi_blocks( img_size, A, level, s_distrib, blocks_list, scheme_type )
+    
+    ps_inv_A = compute_pseudoinv_A( A, scheme_type )
+    
+    pi_th, pi_l = calculate_pi_blocks( img_size, A, ps_inv_A, level, s_distrib, blocks_list )
 
 
     ###### Compute masks
