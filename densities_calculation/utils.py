@@ -81,7 +81,7 @@ def reduce_img_size( img_size, image ):
     img_size: int
         desired size of the image (typically power of 2)
     image: 2D ndarray
-        the image to shrink
+        image to shrink
         
     Returns
     -------
@@ -99,3 +99,65 @@ def reduce_img_size( img_size, image ):
     reduced_image = np.fft.ifft2( np.fft.fftshift( reduced_coef ) )
     
     return np.abs( reduced_image )
+
+
+def split_det_rand( img_size, blocks_list, spl_type = None, det_portion = 0.0 ):
+    """
+    Split the blocks into deterministically chosen and randomly sampled
+    
+    Parameters
+    ----------    
+    img_size: int
+        desired size of the image (typically power of 2)
+    blocks_list: list
+        list of blocks of points
+    spl_type: string
+        'none': choose deterministically the first several blocks, 
+        'det_center': for radial and spiral schemes choose the central point deterministically
+        'det_central_line': for cartesian scheme choose the central line deterministically 
+    det_portion: float
+        portion of points to be chosen deterministically (between 0.0 and 1.0)
+        
+    Returns
+    -------
+    det_blocks_list: list
+        list of deterministically chosen blocks
+    rand_blocks_list: list
+        list of randomly sampled blocks
+    """
+    
+    if spl_type == 'det_center':
+        det_blocks_list = [ blocks_list[ 0 ] ]
+        rand_blocks_list = blocks_list[ 1 : ]
+    elif spl_type == 'det_central_line':
+        bl_list_copy = blocks_list.copy()
+        det_blocks_list = [ bl_list_copy.pop( img_size //2 ) ]
+        rand_blocks_list = bl_list_copy
+    elif spl_type == 'none':
+        det_last_ind = int( det_portion * len( blocks_list ) )
+        det_blocks_list = blocks_list[ : det_last_ind ]
+        rand_blocks_list = blocks_list[ det_last_ind : ]
+    
+    return det_blocks_list, rand_blocks_list
+
+def blocks_list_size( blocks_list ):
+    """
+    Calculate the overall number of points in a list of blocks
+    
+    Parameters
+    ----------    
+    blocks_list: list
+        list of blocks of points
+        
+    Returns
+    -------
+    int
+        number of points in the blocks of blocks_list
+    """
+    
+    tot_size = 0
+    
+    for block in blocks_list:
+        tot_size += len( block )
+        
+    return tot_size
