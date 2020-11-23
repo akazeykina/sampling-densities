@@ -41,7 +41,7 @@ def generate_full_scheme( scheme_type, block_type, img_size, num_revolutions = 1
         X = X.flatten('C')
         Y = Y.flatten('C')
             
-        full_kspace = np.stack( ( X, Y ), axis = 1 )  
+        full_kspace = np.stack( ( Y, X ), axis = 1 )  
             
     elif scheme_type == 'radial':
         n_rad = int( img_size / 2 )
@@ -56,7 +56,7 @@ def generate_full_scheme( scheme_type, block_type, img_size, num_revolutions = 1
         X = ( Rad * np.cos( Phi ) ).flatten( 'C' )
         Y = ( Rad * np.sin( Phi ) ).flatten( 'C' )
             
-        full_kspace = np.stack( ( X, Y ), axis = 1 )  
+        full_kspace = np.stack( ( Y, X ), axis = 1 )  
         full_kspace = np.vstack( ( np.array( [ 0, 0 ] ), full_kspace ) )
     
     elif scheme_type == 'spiral':
@@ -74,7 +74,7 @@ def generate_full_scheme( scheme_type, block_type, img_size, num_revolutions = 1
         X = ( R * np.cos( Ang ) ).flatten( 'C' )
         Y = ( R * np.sin( Ang ) ).flatten( 'C' )
             
-        full_kspace = np.stack( ( X, Y ), axis = 1 )  
+        full_kspace = np.stack( ( Y, X ), axis = 1 )  
         full_kspace = np.vstack( ( np.array( [ 0, 0 ] ), full_kspace ) )
         
     return full_kspace
