@@ -8,13 +8,14 @@ Created on Fri Apr 24 17:48:13 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
+import time
+import scipy
 
 from densities_calculation.utils import wav_coef_array_to_matrix
-from densities_calculation.s_distribution import s_distribution
-from densities_calculation.compute_A import A_matrix_anisotropic, compute_pseudoinv_A
-from densities_calculation.mask import compute_mask
+from densities_calculation.compute_A import A_matrix_anisotropic, compute_pseudoinv_A, A_block_isotropic
 
-def calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, blocks_list ):
+def calculate_pi_blocks( img_size, scheme_type, full_kspace, reg_type, cond, lam,
+                        wavelet, level, s_distrib, blocks_list ):
     """
     Calculate pi_theta, pi_lambda in the block-structured anisotropic setting
     
@@ -22,10 +23,18 @@ def calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, blocks_lis
     ----------
     img_size: integer
         size of the image (power of 2)
-    A: ndarray
-        matrix of measurements (complex-valued) A = F Psi^*
-    pseudo_inv_A: ndarray
-        pseudoinverse of A (complex-valued) psinv(A) = ( A^* A )^{-1} A^*
+    scheme_type: string
+        "cartesian", "radial" or "spiral"
+    full_kspace: ndarray
+        The kspace locations of the full scheme, matrix of size (N,2) with columns k_y, k_x
+    reg_type: string
+        Type of regularisation used to calculate the pseudoinverse of A; 'svd' or 'tikh'
+    cond: float
+        Condition number for svd regularisation
+    lam: float
+        Parameter lambda for Tikhonov regularisation
+    wavelet: string
+        wavelet type (orthogonal transform)
     level: integer
         level of the wavelet transform
     s_distrib: ndarray
@@ -53,13 +62,37 @@ def calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, blocks_lis
     pi_th_anis = np.zeros( ( len( blocks_list ), 1 ) )
     pi_l = np.zeros( ( len( blocks_list ), 1 ) )
     
+    ############## Calculate matrix A and its pseudoinverse
+    
+    if scheme_type != 'cartesian':
+        print( "Calculate matrix A" )
+        st_time = time.time()
+        A = A_matrix_anisotropic( img_size, wavelet, level, full_kspace )
+        print( "Matrix A calculation time:", time.time() - st_time ) 
+
+
+        print("Calculating pseudoinverse")
+        st_time = time.time()
+        if reg_type == "svd":
+            pseudo_inv_A = scipy.linalg.pinv2( A, cond )
+        else:
+            pseudo_inv_A = compute_pseudoinv_A( A, lam, parallel = True )
+        print( "Pseudoinverse calculation time:", time.time() - st_time )
+        print("End of calculation of pseudoinverse")
+        
+    ###################################
+    
     block_num = 0
     for block in blocks_list:
         #if block_num%10 == 0:
             #print( "Calculating pi, iteration:", block_num )
-           
-        a_block = A[ block, : ]
-        ps_a_block = pseudo_inv_A[ :, block ]
+            
+        if scheme_type == 'cartesian':
+            a_block = A_block_isotropic( img_size, wavelet, level, full_kspace, block )
+            ps_a_block = np.conj( a_block.T )
+        else:
+           a_block = A[ block, : ]
+           ps_a_block = pseudo_inv_A[ :, block ]
         
         pi_inf[ block_num, : ] = np.linalg.norm( a_block.flatten(), ord = np.inf ) ** 2
         pi_th_is[ block_num, : ] = np.linalg.norm( a_block.flatten(), ord = np.inf )

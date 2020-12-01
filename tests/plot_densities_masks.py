@@ -7,14 +7,11 @@ Created on Fri Sep 25 21:29:27 2020
 """
 
 import numpy as np
-import scipy
 import matplotlib.pyplot as plt
-import time
 
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from densities_calculation.compute_A import A_matrix_anisotropic, compute_pseudoinv_A
 from densities_calculation.mask import compute_mask
 from densities_calculation.s_distribution import avg_s_distribution
 from densities_calculation.calculate_densities import pi_rad, calculate_pi_blocks
@@ -47,14 +44,7 @@ sub_sampling_rate = 0.2
 #img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
 img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
 
-#img = img_s_distrib_list[ 5 ]
-#print( img.shape )
-##img = np.zeros( ( 32, 32 ) )
-##img[ :, 24 ] = 1
-#plt.figure()
-#plt.imshow( img )
-#plt.show()
-#img_s_distrib_list = [ img for i in range( 10 ) ]
+
 s_distrib = avg_s_distribution( img_size, img_s_distrib_list, wavelet, level, sparsity )
 print("S distribution:")
 print( s_distrib )
@@ -64,33 +54,14 @@ blocks_list = generate_blocks_list( scheme_type, block_type, img_size )
 nb_samples = num_samples( sub_sampling_rate, scheme_type, blocks_list, [], blocks_list )
 
 
-print( "Calculate matrix A" )
-st_time = time.time()
-A = A_matrix_anisotropic( img_size, wavelet, level, full_kspace )
-print( "Matrix A calculation time:", time.time() - st_time ) 
-
-
-print("Calculating pseudoinverse")
-st_time = time.time()
-if scheme_type == 'cartesian':
-    pseudo_inv_A = np.conj( A.T ) #scipy.linalg.inv( A )
-else:
-    if reg_type == "svd":
-        pseudo_inv_A = scipy.linalg.pinv2( A, cond )
-    else:
-        pseudo_inv_A = compute_pseudoinv_A( A, lam, parallel = True )
-print( "Pseudoinverse calculation time:", time.time() - st_time )
-print("End of calculation of pseudoinverse")
-
-
 ####### Compute pi radial
 pi_rad = pi_rad( 2, 0.2, np.array( [ img_size, img_size ] ) )
 #
 
 print( "Calculate pi" )
 pi = {}
-pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, 
-  blocks_list )
+pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, scheme_type,
+  full_kspace, reg_type, cond, lam, wavelet, level, s_distrib, blocks_list )
 
 
 pi_fl = { "rad": pi_rad.flatten(),
