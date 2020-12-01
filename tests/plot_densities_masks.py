@@ -19,7 +19,7 @@ from densities_calculation.mask import compute_mask
 from densities_calculation.s_distribution import avg_s_distribution
 from densities_calculation.calculate_densities import pi_rad, calculate_pi_blocks
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
-from densities_calculation.utils import extract_images
+from densities_calculation.utils import extract_images, reduce_img_size
 
 
 
@@ -47,13 +47,13 @@ sub_sampling_rate = 0.2
 #img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
 img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
 
-img = img_s_distrib_list[ 5 ]
-print( img.shape )
-#img = np.zeros( ( 32, 32 ) )
-#img[ :, 24 ] = 1
-plt.figure()
-plt.imshow( img )
-plt.show()
+#img = img_s_distrib_list[ 5 ]
+#print( img.shape )
+##img = np.zeros( ( 32, 32 ) )
+##img[ :, 24 ] = 1
+#plt.figure()
+#plt.imshow( img )
+#plt.show()
 #img_s_distrib_list = [ img for i in range( 10 ) ]
 s_distrib = avg_s_distribution( img_size, img_s_distrib_list, wavelet, level, sparsity )
 print("S distribution:")
@@ -123,21 +123,39 @@ pi_l_mask = compute_mask( pi_fl[ "l" ], nb_samples )
 
 print( np.sum( pi_l_mask ) / img_size**2 )
 
-###### Plot color maps
+###### Plot MRI images
+fig = plt.figure( figsize = ( 18, 5 ) )
+
+for i in range( 5 ):
+    ax = fig.add_subplot(1, 5, i + 1 )
+    plt.imshow( reduce_img_size( img_size, img_s_distrib_list[ i * 2 + 1 ] ), cmap = 'gray' )
+
+plt.show()
+
+###### Plot densities
 
 pi_th_anis = np.reshape( pi_fl[ "th_anis" ], ( img_size, img_size ), order = 'C' )
 pi_l = np.reshape( pi_fl[ "l" ], ( img_size, img_size ), order = 'C' )
 
+val_min = min( np.min( pi_rad ), np.min( pi_th_anis ), np.min( pi_l ) )
+val_max = max( np.max( pi_rad ), np.max( pi_th_anis ), np.max( pi_l ) )
+
 fig = plt.figure( figsize = ( 18, 5 ) )
 
 ax = fig.add_subplot(1, 3, 1 )
-plt.imshow( pi_rad )
+#plt.imshow( pi_rad, vmin = val_min, vmax = val_max )
+ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ "rad" ],
+               vmin = val_min, vmax = val_max )
 
 ax = fig.add_subplot(1, 3, 2 )
-plt.imshow( pi_th_anis )
+#plt.imshow( pi_th_anis, vmin = val_min, vmax = val_max )
+ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ "th_anis" ],
+               vmin = val_min, vmax = val_max )
 
 ax = fig.add_subplot(1, 3, 3 )
-plt.imshow( pi_l )
+#plt.imshow( pi_l, vmin = val_min, vmax = val_max )
+ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ "l" ],
+               vmin = val_min, vmax = val_max )
 
 plt.show()
 #
