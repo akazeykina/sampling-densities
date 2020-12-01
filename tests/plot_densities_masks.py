@@ -7,19 +7,35 @@ Created on Fri Sep 25 21:29:27 2020
 """
 
 import numpy as np
+import scipy
 import matplotlib.pyplot as plt
+import time
 
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from densities_calculation.compute_A import A_matrix_anisotropic, compute_pseudoinv_A
 from densities_calculation.mask import compute_mask
 from densities_calculation.s_distribution import avg_s_distribution
-from densities_calculation.calculate_densities import pi_rad
+from densities_calculation.calculate_densities import pi_rad, calculate_pi_blocks
+from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
+from densities_calculation.utils import extract_images
 
 
 
 
-img_size = 64
+img_size = 32
 n = img_size**2
 wavelet = 'sym4'
 level = 3
+
+scheme_type = 'cartesian'
+block_type = 'isolated' # isolated points
+
+# Parameters for calculating the pseudoinverse
+reg_type = 'svd'
+cond = 0.0
+lam = 0.0
 
 sparsity = 0.1 # sparsity level: assume that only s = 'sparsity' wavelets coefficients are non zero
 
@@ -27,99 +43,118 @@ sub_sampling_rate = 0.2
 
 ####### Distribution of sparsity coefficients
 
-img_s_distrib = "../brain_images/sub-OAS30001_ses-d0129_run-01_T1w.nii"
-s_distrib = avg_s_distribution( img_size, img_s_distrib, wavelet, level, sparsity )
+#img_s_distrib_list = extract_images( "../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
+#img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
+img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
+
+img = img_s_distrib_list[ 5 ]
+print( img.shape )
+#img = np.zeros( ( 32, 32 ) )
+#img[ :, 24 ] = 1
+plt.figure()
+plt.imshow( img )
+plt.show()
+#img_s_distrib_list = [ img for i in range( 10 ) ]
+s_distrib = avg_s_distribution( img_size, img_s_distrib_list, wavelet, level, sparsity )
 print("S distribution:")
 print( s_distrib )
 
-######## Compute pi_theta and pi_lambda
-#print( "Size of pi:", img_size**2 )
-#pi_inf_flattened, pi_th_flattened, pi_th_new_flattened, pi_l_flattened = calculate_pi(
-#        img_size, wavelet, level, s_distrib )
-#
+full_kspace = generate_full_scheme( scheme_type, block_type, img_size )
+blocks_list = generate_blocks_list( scheme_type, block_type, img_size )
+nb_samples = num_samples( sub_sampling_rate, scheme_type, blocks_list, [], blocks_list )
+
+
+print( "Calculate matrix A" )
+st_time = time.time()
+A = A_matrix_anisotropic( img_size, wavelet, level, full_kspace )
+print( "Matrix A calculation time:", time.time() - st_time ) 
+
+
+print("Calculating pseudoinverse")
+st_time = time.time()
+if scheme_type == 'cartesian':
+    pseudo_inv_A = np.conj( A.T ) #scipy.linalg.inv( A )
+else:
+    if reg_type == "svd":
+        pseudo_inv_A = scipy.linalg.pinv2( A, cond )
+    else:
+        pseudo_inv_A = compute_pseudoinv_A( A, lam, parallel = True )
+print( "Pseudoinverse calculation time:", time.time() - st_time )
+print("End of calculation of pseudoinverse")
+
+
 ####### Compute pi radial
 pi_rad = pi_rad( 2, 0.2, np.array( [ img_size, img_size ] ) )
 #
-#
+
+print( "Calculate pi" )
+pi = {}
+pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, 
+  blocks_list )
+
+
+pi_fl = { "rad": pi_rad.flatten(),
+        "th_anis": np.zeros( ( full_kspace.shape[ 0 ], ) ),
+         "l": np.zeros( ( full_kspace.shape[ 0 ], ) ) }
+
+for j in range( len( blocks_list ) ): 
+    block = blocks_list[ j ]
+    pi_fl[ "th_anis" ][ block ] = pi[ "th_anis" ][ j, : ]
+    pi_fl[ "l" ][ block ] = pi[ "l" ][ j, : ]
+
+
 ####### Compute masks
-#
-#nb_samples = int( sub_sampling_rate * n )
-#
-#pi_rad_flattened = np.reshape( pi_rad, ( img_size * img_size, ), order = 'C' )
-#pi_rad_mask = np.reshape( compute_mask( pi_rad_flattened, n, nb_samples ), ( img_size, img_size ), order = 'C' )
+
+pi_rad_mask = compute_mask( pi_fl[ "rad" ], nb_samples )
 #np.save( "../pi_masks/pi_rad_mask_"+str(img_size)+".npy", pi_rad_mask )
-#
+
 #pi_inf_mask = np.reshape( compute_mask( pi_inf_flattened, n, nb_samples ), ( img_size, img_size ), order = 'C' )
 #np.save( "../pi_masks/pi_inf_mask_"+str(img_size)+".npy", pi_inf_mask )
-#
+
 #pi_th_mask = np.reshape( compute_mask( pi_th_flattened, n, nb_samples ), ( img_size, img_size ), order = 'C' )
 #np.save( "../pi_masks/pi_th_mask_"+str(img_size)+".npy", pi_th_mask )
-#
-#pi_th_new_mask = np.reshape( compute_mask( pi_th_new_flattened, n, nb_samples ), ( img_size, img_size ), order = 'C' )
+
+pi_th_anis_mask = compute_mask( pi_fl[ "th_anis" ], nb_samples )
 #np.save( "../pi_masks/pi_th_new_mask_"+str(img_size)+".npy", pi_th_mask )
-#
-#pi_l_mask = np.reshape( compute_mask( pi_l_flattened, n, nb_samples ), ( img_size, img_size ), order = 'C' )
+
+pi_l_mask = compute_mask( pi_fl[ "l" ], nb_samples )
 #np.save( "../pi_masks/pi_l_mask_"+str(img_size)+".npy", pi_l_mask )
 #
-####### Plot color maps
-#
-#pi_inf = np.reshape( pi_inf_flattened, ( img_size, img_size ), order = 'C' )
-#pi_th = np.reshape( pi_th_flattened, ( img_size, img_size ), order = 'C' )
-#pi_th_new = np.reshape( pi_th_new_flattened, ( img_size, img_size ), order = 'C' )
-#pi_l = np.reshape( pi_l_flattened, ( img_size, img_size ), order = 'C' )
-#
-#fig = plt.figure( figsize = ( 18, 10 ) )
-#plt.subplot( 231 )
-#plt.imshow( pi_rad )
-#plt.subplot( 232 )
-#plt.imshow( pi_inf )
-#plt.subplot( 233 )
-#plt.imshow( pi_th )
-#plt.subplot( 235 )
-#plt.imshow( pi_l )
-#plt.subplot( 236 )
-#plt.imshow( pi_th_new )
+
+print( np.sum( pi_l_mask ) / img_size**2 )
+
+###### Plot color maps
+
+pi_th_anis = np.reshape( pi_fl[ "th_anis" ], ( img_size, img_size ), order = 'C' )
+pi_l = np.reshape( pi_fl[ "l" ], ( img_size, img_size ), order = 'C' )
+
+fig = plt.figure( figsize = ( 18, 5 ) )
+
+ax = fig.add_subplot(1, 3, 1 )
+plt.imshow( pi_rad )
+
+ax = fig.add_subplot(1, 3, 2 )
+plt.imshow( pi_th_anis )
+
+ax = fig.add_subplot(1, 3, 3 )
+plt.imshow( pi_l )
+
+plt.show()
 #
 #
 ####### Plots masks
 #
 #
-#fig = plt.figure( figsize = ( 18, 5 ) )
+fig = plt.figure( figsize = ( 18, 5 ) )
+
+ax = fig.add_subplot(1, 3, 1 )
+plt.imshow(pi_rad_mask, cmap='gray')
+
+ax = fig.add_subplot(1, 3, 2 )
+plt.imshow(pi_th_anis_mask, cmap='gray')
+
+ax = fig.add_subplot(1, 3, 3 )
+plt.imshow(pi_l_mask, cmap='gray')
+
+plt.show()
 #
-#ax = fig.add_subplot(2, 3, 1 )
-#plt.imshow(pi_rad_mask, cmap='gray')
-#
-#ax = fig.add_subplot(2, 3, 2 )
-#plt.imshow(pi_inf_mask, cmap='gray')
-#
-#ax = fig.add_subplot(2, 3, 3 )
-#plt.imshow(pi_th_mask, cmap='gray')
-#
-#ax = fig.add_subplot(2, 3, 5 )
-#plt.imshow(pi_l_mask, cmap='gray')
-#
-#ax = fig.add_subplot(2, 3, 6 )
-#plt.imshow(pi_th_new_mask, cmap='gray')
-#
-#plt.show()
-#
-####### 3d plots
-#
-##x = np.arange( img_size )
-##y = np.arange( img_size )
-##X, Y = np.meshgrid( x, y )
-#
-##fig = plt.figure( figsize = ( 18, 5 ) )
-#
-##ax = fig.add_subplot(1, 3, 1, projection = '3d' )
-##surf = ax.plot_surface( X, Y, pi_inf )
-#
-##ax = fig.add_subplot(1, 3, 2, projection = '3d' )
-##surf = ax.plot_surface( X, Y, pi_th )
-#
-##ax = fig.add_subplot(1, 3, 3, projection = '3d' )
-##surf = ax.plot_surface( X, Y, pi_l )
-#
-##plt.show()
-#
-##fig = plt.figure(); plt.plot( pi_l_flattened )
