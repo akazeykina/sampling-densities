@@ -89,17 +89,19 @@ pi_rad = pi_rad( 2, 0.2, np.array( [ img_size, img_size ] ) )
 
 print( "Calculate pi" )
 pi = {}
-pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, 
+pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, 
   blocks_list )
 
 
 pi_fl = { "rad": pi_rad.flatten(),
+         "inf": np.zeros( ( full_kspace.shape[ 0 ], ) ),
          "th_is": np.zeros( ( full_kspace.shape[ 0 ], ) ),
         "th_anis": np.zeros( ( full_kspace.shape[ 0 ], ) ),
          "l": np.zeros( ( full_kspace.shape[ 0 ], ) ) }
 
 for j in range( len( blocks_list ) ): 
     block = blocks_list[ j ]
+    pi_fl[ "inf" ][ block ] = pi[ "inf" ][ j, : ]
     pi_fl[ "th_is" ][ block ] = pi[ "th_is" ][ j, : ]
     pi_fl[ "th_anis" ][ block ] = pi[ "th_anis" ][ j, : ]
     pi_fl[ "l" ][ block ] = pi[ "l" ][ j, : ]
@@ -115,6 +117,8 @@ pi_rad_mask = compute_mask( pi_fl[ "rad" ], nb_samples )
 
 #pi_th_mask = np.reshape( compute_mask( pi_th_flattened, n, nb_samples ), ( img_size, img_size ), order = 'C' )
 #np.save( "../pi_masks/pi_th_mask_"+str(img_size)+".npy", pi_th_mask )
+
+pi_inf_mask = compute_mask( pi_fl[ "inf" ], nb_samples )
 
 pi_th_is_mask = compute_mask( pi_fl[ "th_is" ], nb_samples )
 
@@ -138,34 +142,41 @@ plt.show()
 
 ###### Plot densities
 
+pi_inf = np.reshape( pi_fl[ "th_is" ], ( img_size, img_size ), order = 'C' )
 pi_th_is = np.reshape( pi_fl[ "th_is" ], ( img_size, img_size ), order = 'C' )
 pi_th_anis = np.reshape( pi_fl[ "th_anis" ], ( img_size, img_size ), order = 'C' )
 pi_l = np.reshape( pi_fl[ "l" ], ( img_size, img_size ), order = 'C' )
 
-val_min = min( np.min( pi_rad ), np.min( pi_th_is ), np.min( pi_th_anis ), np.min( pi_l ) )
-val_max = max( np.max( pi_rad ), np.max( pi_th_is ), np.max( pi_th_anis ), np.max( pi_l ) )
+val_min = min( np.min( pi_rad ), np.min( pi_inf ), np.min( pi_th_is ), np.min( pi_th_anis ), np.min( pi_l ) )
+val_max = max( np.max( pi_rad ), np.max( pi_inf ), np.max( pi_th_is ), np.max( pi_th_anis ), np.max( pi_l ) )
 
-fig = plt.figure( figsize = ( 24, 5 ) )
+fig = plt.figure( figsize = ( 30, 5 ) )
 
-ax = fig.add_subplot(1, 4, 1 )
+ax = fig.add_subplot(1, 5, 1 )
 #plt.imshow( pi_rad, vmin = val_min, vmax = val_max )
 ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ "rad" ],
                vmin = val_min, vmax = val_max )
 ax.set_aspect( 'equal' )
 
-ax = fig.add_subplot(1, 4, 2 )
+ax = fig.add_subplot(1, 5, 2 )
+#plt.imshow( pi_rad, vmin = val_min, vmax = val_max )
+ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ "inf" ],
+               vmin = val_min, vmax = val_max )
+ax.set_aspect( 'equal' )
+
+ax = fig.add_subplot(1, 5, 3 )
 #plt.imshow( pi_th_anis, vmin = val_min, vmax = val_max )
 ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ "th_is" ],
                vmin = val_min, vmax = val_max )
 ax.set_aspect( 'equal' )
 
-ax = fig.add_subplot(1, 4, 3 )
+ax = fig.add_subplot(1, 5, 4 )
 #plt.imshow( pi_th_anis, vmin = val_min, vmax = val_max )
 ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ "th_anis" ],
                vmin = val_min, vmax = val_max )
 ax.set_aspect( 'equal' )
 
-ax = fig.add_subplot(1, 4, 4 )
+ax = fig.add_subplot(1, 5, 5 )
 #plt.imshow( pi_l, vmin = val_min, vmax = val_max )
 ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ "l" ],
                vmin = val_min, vmax = val_max )
@@ -177,18 +188,21 @@ plt.show()
 ####### Plots masks
 #
 #
-fig = plt.figure( figsize = ( 24, 5 ) )
+fig = plt.figure( figsize = ( 30, 5 ) )
 
-ax = fig.add_subplot(1, 4, 1 )
+ax = fig.add_subplot(1, 5, 1 )
 plt.imshow(pi_rad_mask, cmap='gray')
 
-ax = fig.add_subplot(1, 4, 2 )
+ax = fig.add_subplot(1, 5, 2 )
+plt.imshow(pi_inf_mask, cmap='gray')
+
+ax = fig.add_subplot(1, 5, 3 )
 plt.imshow(pi_th_is_mask, cmap='gray')
 
-ax = fig.add_subplot(1, 4, 3 )
+ax = fig.add_subplot(1, 5, 4 )
 plt.imshow(pi_th_anis_mask, cmap='gray')
 
-ax = fig.add_subplot(1, 4, 4 )
+ax = fig.add_subplot(1, 5, 5 )
 plt.imshow(pi_l_mask, cmap='gray')
 
 plt.show()

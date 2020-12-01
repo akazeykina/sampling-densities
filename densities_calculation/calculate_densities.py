@@ -36,6 +36,10 @@ def calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, blocks_lis
     
     Returns
     -------
+    pi_inf: ndarray
+        pi_inf, array of size len( blocks_list )
+    pi_th_is: ndarray
+        pi_theta_isotropic, array of size len( blocks_list )
     pi_th_anis: ndarray
         pi_theta_anisotropic, array of size len( blocks_list )
     pi_l: ndarray
@@ -44,6 +48,7 @@ def calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, blocks_lis
 
     J = int( np.log2( img_size ) )
     
+    pi_inf = np.zeros( ( len( blocks_list ), 1 ) )
     pi_th_is = np.zeros( ( len( blocks_list ), 1 ) )
     pi_th_anis = np.zeros( ( len( blocks_list ), 1 ) )
     pi_l = np.zeros( ( len( blocks_list ), 1 ) )
@@ -56,6 +61,7 @@ def calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, blocks_lis
         a_block = A[ block, : ]
         ps_a_block = pseudo_inv_A[ :, block ]
         
+        pi_inf[ block_num, : ] = np.linalg.norm( a_block.flatten(), ord = np.inf ) ** 2
         pi_th_is[ block_num, : ] = np.linalg.norm( a_block.flatten(), ord = np.inf )
         pi_th_anis[ block_num, : ] = np.sqrt( 
                  np.linalg.norm( a_block.flatten(), ord = np.inf ) * \
@@ -120,11 +126,12 @@ def calculate_pi_blocks( img_size, A, pseudo_inv_A, level, s_distrib, blocks_lis
         
         block_num += 1
         
+    pi_inf = pi_inf / np.sum( pi_inf )
     pi_th_is = pi_th_is / np.sum( pi_th_is )
     pi_th_anis = pi_th_anis / np.sum( pi_th_anis )
     pi_l = pi_l / np.sum( pi_l )
 
-    return pi_th_is, pi_th_anis, pi_l
+    return pi_inf, pi_th_is, pi_th_anis, pi_l
 
 def pi_rad( decay, cutoff, im_size ):
     """
