@@ -28,7 +28,7 @@ def generate_full_scheme( scheme_type, block_type, img_size, num_revolutions = 1
     Returns
     -------
     np.ndarray
-        The kspace locations of the full scheme, matrix of size (N,2) with columns k_x, k_y
+        The kspace locations of the full scheme, matrix of size (N,2) with columns k_y, k_x
     
     """
     if scheme_type == "cartesian":
@@ -92,13 +92,12 @@ def generate_blocks_list( scheme_type, block_type, img_size ):
         "circles" or "radia" for radial scheme, "circles" or "spokes" for spiral.
     img_size: integer
         Image size, a power of 2
-    num_revolutions: integer
-        The number of revolutions for the spiral scheme
         
     Returns
     -------
-    np.ndarray
-        The kspace locations of the full scheme, matrix of size (N,2) with columns k_x, k_y
+    list
+        list of sublists of indices of rows in full_kspace where every sublist corresponds 
+        to a block of points in full_kspace
     
     """
     if scheme_type == 'cartesian':
@@ -145,20 +144,21 @@ def num_samples( sub_sampling_rate, scheme_type, blocks_list, det_blocks_list, r
     
     Parameters
     ----------
+    sub_sampling_rate: float
+        Proportion of points (blocks) to sample, between 0.0 and 1.0
     scheme_type: string
         "cartesian", "radial" or "spiral"
-    block_type: string
-        The type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
-        "circles" or "radia" for radial scheme, "circles" or "spokes" for spiral.
-    img_size: integer
-        Image size, a power of 2
-    num_revolutions: integer
-        The number of revolutions for the spiral scheme
+    blocks_list: list
+        The full list of blocks of points in kspace
+    det_blocks_list: list
+        List of blocks that are deterministically samples
+    rand_blocks_list: list
+        List of blocks that are randomly sampled
         
     Returns
     -------
-    np.ndarray
-        The kspace locations of the full scheme, matrix of size (N,2) with columns k_x, k_y
+    integer
+        The number of samples (blocks) to sample from the full list of blocks
     
     """
     if scheme_type == 'cartesian':
