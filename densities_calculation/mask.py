@@ -8,7 +8,7 @@ Created on Tue Apr 14 10:46:49 2020
 
 import numpy as np
 
-def compute_mask( pi, nb_samples ):
+def compute_indices( pi, nb_samples ):
     """
     Compute mask from a given probability density without replacement
     
@@ -18,12 +18,41 @@ def compute_mask( pi, nb_samples ):
         probability density
     nb_samples: integer
         the number of samples to be drawn
+        
+    Returns
+    -------
+    ndarray
+        Indices of the sampled points
     """
     
     ind = np.arange( pi.size )
     sampled_points = np.random.choice( ind, size = nb_samples, replace = False, p = np.squeeze( pi ) )
     
     return sampled_points
+
+def compute_mask( pi, nb_samples ):
+    """
+    Compute mask (a matrix of 0 and 1) from the indices of sampled points 
+    
+    Parameters
+    ----------
+    pi: ndarray
+        probability density
+    nb_samples: integer
+        the number of samples to be drawn
+    
+    Returns 
+    -------
+    ndarray
+        Matrix of shape (img_size, img_size) of 0 and 1 with 1 corresponding to sampled points
+    """
+    img_size = int( np.sqrt( pi.size ) )
+    mask = np.zeros( ( pi.size, ) )
+    
+    indices = compute_indices( pi, nb_samples )
+    mask[ indices ] = 1
+    
+    return np.reshape( mask, ( img_size, img_size ), order = 'C' )
 
 
 
