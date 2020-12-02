@@ -76,7 +76,7 @@ def s_distribution( img_size, im, wavelet, level, sparsity ):
     
     return S
 
-def avg_s_distribution( img_size, fname, wavelet, level, sparsity ):
+def avg_s_distribution( img_size, img_list, wavelet, level, sparsity ):
     """
     Calculate the averaged vector s of the numbers of nonzero wavelet coefficients per subband
     
@@ -84,9 +84,8 @@ def avg_s_distribution( img_size, fname, wavelet, level, sparsity ):
     ----------
     img_size: integer
         size of the image (power of 2)
-    fname: string
-        name of the file from oasis dataset containing the images from which the vector s is computed
-        (10 slices are chosen from the 'middle' of the volume)
+    img_list: string
+        list of images from which the vector s is computed
     wavelet: string
         wavelet type (orthogonal transform)
     level: integer
@@ -103,17 +102,13 @@ def avg_s_distribution( img_size, fname, wavelet, level, sparsity ):
         the upper diagonal to the horizontal details, the main diagonal to the diagonal details
     """
     
-
-    images = nib.load( fname )
-    images = images.get_fdata()
-    num_img = images.shape[ 0 ]
     
     S = np.zeros( ( level + 1, level + 1 ) )
     
-    for j in range( 10 ):
+    for img in img_list:
 
         S += s_distribution( img_size, 
-            reduce_img_size( img_size, images[ num_img // 2 - 25 + 5 * j, :, : ] ), wavelet, level, sparsity ) 
+            reduce_img_size( img_size, img ), wavelet, level, sparsity ) 
         
     S /= 10
     

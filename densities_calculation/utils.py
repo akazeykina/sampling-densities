@@ -7,6 +7,8 @@ Created on Tue Apr 14 10:57:28 2020
 """
 
 import numpy as np
+import nibabel as nib
+import h5py
 
 def wav_coef_array_to_matrix( coefs, level ):
     """
@@ -35,9 +37,9 @@ def wav_coef_array_to_matrix( coefs, level ):
     
     for j in reversed( range( 1, level + 1 ) ):
         
-        cH = np.reshape( coefs[ 2**( 2 * ( J - j ) ) : 2**( 2 * ( J - j ) + 1 ) ], 
+        cV = np.reshape( coefs[ 2**( 2 * ( J - j ) ) : 2**( 2 * ( J - j ) + 1 ) ], 
                         ( 2**( J - j ), 2**( J - j ) ) )
-        cV = np.reshape( coefs[ 2**( 2 * ( J - j ) + 1 ) : 3 * 2**( 2 * ( J - j ) ) ], 
+        cH = np.reshape( coefs[ 2**( 2 * ( J - j ) + 1 ) : 3 * 2**( 2 * ( J - j ) ) ], 
                         ( 2**( J - j ), 2**( J - j ) ) )
         cD = np.reshape( coefs[ 3 * 2**( 2 * ( J - j ) ) : 4 * 2**( 2 * ( J - j ) ) ], 
                         ( 2**( J - j ), 2**( J - j ) ) )
@@ -99,6 +101,41 @@ def reduce_img_size( img_size, image ):
     reduced_image = np.fft.ifft2( np.fft.fftshift( reduced_coef ) )
     
     return np.abs( reduced_image )
+
+def extract_images( fname, fextension, data_type = None ):
+    """
+    Extract 10 images from a given file
+    
+    Parameters
+    ----------    
+    fname: string
+        name of the file
+    fextension: string
+        file extension: "nii" or "h5"
+    data_type: string
+        "T1w" or "T2w"
+    Returns
+    -------
+    list
+        list of ten images extracted from the file
+    """
+    if fextension == "nii":
+        images = nib.load( fname )
+        images = images.get_fdata()
+        if data_type == "T1w":
+            num_img = images.shape[ 0 ]
+            img_list = [ images[ num_img // 2 - 50 + 10 * j, :, : ] for j in range( 10 ) ]
+        elif data_type == "T2w":
+            num_img = images.shape[ 2 ]
+            img_list = [ images[ :, :, num_img // 2 - 10 + 2 * j ] for j in range( 10 ) ]
+    elif fextension == "h5":
+        with h5py.File( fname, 'r' ) as h5_obj:
+            images = h5_obj['reconstruction_esc'][:]
+        num_img = images.shape[ 0 ]
+        img_list = [ images[ num_img // 2 - 10 + 2 * j, :, : ] for j in range( 10 ) ]
+    
+    
+    return img_list
 
 
 def split_det_rand( img_size, blocks_list, spl_type = None, det_portion = 0.0 ):
