@@ -207,3 +207,42 @@ def pi_rad( decay, cutoff, im_size ):
     
     return density
 
+def unravel_pi( pi, dens_type, blocks_list, num_kpoints ):
+    """
+    Turn a vector of probabilities associated with blocks to a vector of probabilities
+    defined for each point of kspace (for plotting)
+    
+    Parameters
+    ----------
+    pi: dict
+        Dictionary of vectors of probabilities defined for blocks
+    dens_type: list
+        Density type (e.g. "rad", "inf", "th_is", "th_anis", "l"); keys of pi dictionary
+    blocks_list: list
+        List of sublists of row indices corresponding to blocks of points of kspace
+    num_kpoints: int
+        Number of kspace points
+    
+    Returns
+    -------
+    pi_fl: dict
+        Unraveled pi
+    """
+    pi_fl = {}
+    for pi_type in dens_type:
+        pi_fl[ pi_type ] = np.zeros( ( num_kpoints, ) )
+
+    for j, block in enumerate( blocks_list ): 
+        for pi_type in dens_type:
+            pi_fl[ pi_type ][ block ] = pi[ pi_type ][ j, : ]
+            
+    return pi_fl
+
+#def pi_blocks_to_matr( pi_fl, dens_type, img_size ):
+#
+#    pi_matr = {}
+#    for pi_type in dens_type:
+#        pi_matr[ pi_type ] = np.reshape( pi_fl[ pi_type ], ( img_size, img_size ), order = 'C' )
+#    
+#    return pi_matr
+
