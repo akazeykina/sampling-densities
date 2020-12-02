@@ -57,7 +57,7 @@ nb_samples = num_samples( sub_sampling_rate, scheme_type, blocks_list, [], block
 pi_rad = pi_rad( 2, 0.2, np.array( [ img_size, img_size ] ) )
 #
 ####### Compute CS densities pi
-print( "Calculate pi" )
+print( "Calculate pi, vector size:", img_size**2 )
 pi = {}
 pi[ "rad" ] = pi_rad.flatten()
 pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, scheme_type,

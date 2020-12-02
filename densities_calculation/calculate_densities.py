@@ -83,9 +83,9 @@ def calculate_pi_blocks( img_size, scheme_type, full_kspace, reg_type, cond, lam
     ###################################
     
     block_num = 0
-    for block in blocks_list:
-        #if block_num%10 == 0:
-            #print( "Calculating pi, iteration:", block_num )
+    for block_num, block in enumerate( blocks_list ):
+        if block_num%1000 == 0:
+            print( "Calculating pi, iteration:", block_num )
             
         if scheme_type == 'cartesian':
             a_block = A_block_isotropic( img_size, wavelet, level, full_kspace, block )
