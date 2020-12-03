@@ -104,7 +104,7 @@ def reduce_img_size( img_size, image ):
 
 def extract_images( fname, fextension, data_type = None, num_images = 10 ):
     """
-    Extract 10 images from a given file
+    Extract images from a given file
     
     Parameters
     ----------    
@@ -114,6 +114,8 @@ def extract_images( fname, fextension, data_type = None, num_images = 10 ):
         file extension: "nii" or "h5"
     data_type: string
         "T1w" or "T2w"
+    num_images: int
+        Number of images to extract
     Returns
     -------
     list
