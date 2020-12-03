@@ -107,8 +107,7 @@ def avg_s_distribution( img_size, img_list, wavelet, level, sparsity ):
     
     for img in img_list:
 
-        S += s_distribution( img_size, 
-            reduce_img_size( img_size, img ), wavelet, level, sparsity ) 
+        S += s_distribution( img_size, img, wavelet, level, sparsity ) 
         
     S /= 10
     

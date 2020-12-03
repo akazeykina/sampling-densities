@@ -10,7 +10,7 @@ import numpy as np
 
 from mri.operators import NonCartesianFFT
 
-def masked_fourier_op( img_size, full_kspace, pi_fl, pi_mask, det_indices, rand_blocks_list, normalize = True ):
+def masked_fourier_op( img_size, full_kspace, det_indices, rand_blocks_list, pi_fl, pi_mask, normalize = True ):
     """
     Compute masked Fourier operator
     
@@ -39,7 +39,8 @@ def masked_fourier_op( img_size, full_kspace, pi_fl, pi_mask, det_indices, rand_
     
     full_mask = np.zeros( ( full_kspace.shape[ 0 ], ), dtype = 'bool' )
     
-    full_mask[ det_indices ] = True
+    if det_indices:
+        full_mask[ det_indices ] = True
     
     for ind in pi_mask:
         full_mask[ rand_blocks_list[ ind ] ] = True
@@ -54,13 +55,21 @@ def masked_fourier_op( img_size, full_kspace, pi_fl, pi_mask, det_indices, rand_
         div = np.zeros( ( full_kspace.shape[ 0 ], ) )
         div[ det_indices ] = 1
         div[ rand_indices ] = np.sqrt( pi_fl[ rand_indices ] * len( rand_blocks_list ) )
+        
+        fourier_op = NonCartesianFFT( samples = kspace_loc, shape = ( img_size, img_size ), implementation = 'cpu' )
+        #fourier_op = FFT( samples = kspace_loc, shape = cartesian_image.shape )
+        norm_fourier_op = NonCartesianFFT( samples = kspace_loc, shape = ( img_size, img_size ), implementation = 'cpu' )
+        norm_fourier_op.op = lambda x: fourier_op.op( x ) / div[ full_mask ]
+        norm_fourier_op.adj_op = lambda x: fourier_op.adj_op( x / div[ full_mask ] )
     else: 
-        div = np.ones( full_kspace.shape[ 0 ] )
-    
-    fourier_op = NonCartesianFFT( samples = kspace_loc, shape = ( img_size, img_size ), implementation = 'cpu' )
-    #fourier_op = FFT( samples = kspace_loc, shape = cartesian_image.shape )
-    norm_fourier_op = NonCartesianFFT( samples = kspace_loc, shape = ( img_size, img_size ), implementation = 'cpu' )
-    norm_fourier_op.op = lambda x: fourier_op.op( x ) / div[ full_mask ]
-    norm_fourier_op.adj_op = lambda x: fourier_op.adj_op( x / div[ full_mask ] )
+        norm_fourier_op = NonCartesianFFT( samples = kspace_loc, shape = ( img_size, img_size ), implementation = 'cpu' )
         
     return norm_fourier_op
+
+
+
+
+
+
+
+

@@ -53,9 +53,11 @@ mus = np.logspace( 1, 0, 2 ) # regularisation parameter of the reconstruction al
 
 dens_type  = [ "rad", "inf", "th_is", "th_anis", "l" ] # types of densities to compute
 
-img_list = extract_images( "../brain_images/fastmri/file1000001.h5", "h5", num_imgs ) # images to reconstruct
+img_list = extract_images( "../brain_images/fastmri/file1000001.h5", "h5", 
+                          img_size = img_size, num_images = num_imgs ) # images to reconstruct
 
-img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5", 10 ) # images for calculation of s
+img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5", 
+                                    img_size = img_size ) # images for calculation of s
 
 linear_op = WaveletN( wavelet_name = wavelet, nb_scale = level, padding_mode = 'periodization' )
 
@@ -109,7 +111,8 @@ for pi_type in dens_type:
     for i in range( num_runs ):
         pi_mask = compute_indices( pi[ pi_type ], nb_samples )
         
-        fourier_op = masked_fourier_op( img_size, full_kspace, [], blocks_list, pi_fl[ pi_type ], pi_mask )
+        fourier_op = masked_fourier_op( img_size, full_kspace, [], 
+                                       blocks_list[ 0: ], pi_fl[ pi_type ], pi_mask, normalize = False )
 
         # Setup Reconstructor
         reconstructor = SingleChannelReconstructor(
