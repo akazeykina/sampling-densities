@@ -102,7 +102,7 @@ def reduce_img_size( img_size, image ):
     
     return np.abs( reduced_image )
 
-def extract_images( fname, fextension, data_type = None ):
+def extract_images( fname, fextension, data_type = None, num_images = 10 ):
     """
     Extract 10 images from a given file
     
@@ -124,15 +124,15 @@ def extract_images( fname, fextension, data_type = None ):
         images = images.get_fdata()
         if data_type == "T1w":
             num_img = images.shape[ 0 ]
-            img_list = [ images[ num_img // 2 - 50 + 10 * j, :, : ] for j in range( 10 ) ]
+            img_list = [ images[ num_img // 2 - 50 + 100 // num_images * j, :, : ] for j in range( num_images ) ]
         elif data_type == "T2w":
             num_img = images.shape[ 2 ]
-            img_list = [ images[ :, :, num_img // 2 - 10 + 2 * j ] for j in range( 10 ) ]
+            img_list = [ images[ :, :, num_img // 2 - 10 + 20 // num_images * j ] for j in range( num_images ) ]
     elif fextension == "h5":
         with h5py.File( fname, 'r' ) as h5_obj:
             images = h5_obj['reconstruction_esc'][:]
         num_img = images.shape[ 0 ]
-        img_list = [ images[ num_img // 2 - 10 + 2 * j, :, : ] for j in range( 10 ) ]
+        img_list = [ images[ num_img // 2 - 10 + 20 // num_images * j, :, : ] for j in range( num_images ) ]
     
     
     return img_list
