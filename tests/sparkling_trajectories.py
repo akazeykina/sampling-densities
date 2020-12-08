@@ -35,6 +35,8 @@ def get_sparkling( INITIALIZATION, verbose = 0 ):
 img_size = 256
 n = img_size ** 2
 
+dens_type = [ "inf", "th_is", "th_anis", "l" ]
+
 nc = 26 # number of shots
 ns = 512 # number of samples per shot; nc = 13, ns = 1024 correspond to s/s factor 0.2 for img_size = 256
 
@@ -64,3 +66,33 @@ ax = fig.add_subplot( 1, 1, 1 )
 ax.scatter( in_kspace_loc[ :, 0 ], in_kspace_loc[ :, 1 ], s = 1 )
 plt.savefig( results_dir+'initial_kspace_points.png', bbox_inches='tight')
 #plt.show()
+
+kspace_loc = {}
+
+for pi_type in dens_type:
+    pi_density = np.load( "pi_dens/pi_"+pi_type+"_"+str(img_size)+".npy" )
+    init['dist_params']['density'] = pi_density
+    init['dist_params']['cutoff'] = None
+    init['dist_params']['decay'] = None
+    kspace_loc[ pi_type ] = get_sparkling( init, verbose = 10 )
+    
+    
+####### Plot the resulting trajectories
+    
+fig = plt.figure( figsize = ( 30, 5 ) )
+
+for i, pi_type in enumerate( dens_type ):
+    ax = fig.add_subplot(1, len( dens_type ), i + 1 )
+    ax.scatter( kspace_loc[ pi_type ][ :, 0 ], kspace_loc[ pi_type ][ :, 1 ], s = 1 )
+    ax.set_aspect( 'equal' )
+    
+plt.savefig( results_dir+'trajectories.png', bbox_inches='tight')
+    
+    
+    
+    
+    
+    
+    
+    
+    
