@@ -41,7 +41,7 @@ ns = 512 # number of samples per shot; nc = 13, ns = 1024 correspond to s/s fact
 ######## Create directory for pictures
 
 script_dir = os.path.dirname( __file__ )
-results_dir = os.path.join( script_dir, 'pictures/plot_densities_masks/' )
+results_dir = os.path.join( script_dir, 'pictures/sparkling_trajectories/' )
 if not os.path.isdir( results_dir ):
     os.makedirs( results_dir )
 
