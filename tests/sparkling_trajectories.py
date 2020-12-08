@@ -14,13 +14,7 @@ from sparkling import Run
 from sparkling.parameters.initializations import INITIALIZATION_2D
 from sparkling.utils.shots import convert_NCxNSxD_to_NCNSxD
 
-#from modopt.opt.proximity import SparseThreshold
-#from modopt.opt.linear import Identity
-#from modopt.math.metrics import ssim
-
-#from mri.operators import NonCartesianFFT, WaveletN
 from mri.operators.utils import normalize_frequency_locations
-#from mri.reconstructors import SingleChannelReconstructor
 
 
 def get_sparkling( INITIALIZATION, verbose = 0 ):
@@ -32,13 +26,13 @@ def get_sparkling( INITIALIZATION, verbose = 0 ):
     shots = convert_NCxNSxD_to_NCNSxD(runObj.current[ 'shots' ] )
     return normalize_frequency_locations( shots )
 
-img_size = 256
+img_size = 64
 n = img_size ** 2
 
-dens_type = [ "inf", "th_is", "th_anis", "l" ]
+dens_type = [ "rad", "inf", "th_is", "th_anis", "l" ]
 
-nc = 26 # number of shots
-ns = 512 # number of samples per shot; nc = 13, ns = 1024 correspond to s/s factor 0.2 for img_size = 256
+nc = 13 # number of shots
+ns = 64 # number of samples per shot; nc = 13, ns = 1024 correspond to s/s factor 0.2 for img_size = 256
 
 ######## Create directory for pictures
 
