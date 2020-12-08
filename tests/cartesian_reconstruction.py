@@ -42,16 +42,21 @@ lam = 0.0
     
 sparsity = 0.1 # sparsity level: assume that only s = 'sparsity' wavelets coefficients are non zero
 #fname = 'brain_phantom/BrainPhantom'+str(n_dim)+'.png' # image for computing s distribution
+
+decays = [ 2, 4, 6 ] # decays of pi_radial
+cutoffs = [ 0.1, 0.2, 0.3 ] #cutoffs of pi_radial
     
 sub_sampling_rate = 0.2
 
-num_runs = 2 # number of runs of reconstruction algorithm
-num_imgs = 3 # number of images over which the result of reconstruction is averaged
+num_runs = 5 # number of runs of reconstruction algorithm
+num_imgs = 5 # number of images over which the result of reconstruction is averaged
 
-mus = np.logspace( 1, 0, 2 ) # regularisation parameter of the reconstruction algorithm
+mus = np.logspace( -4, -6, 4 ) # regularisation parameter of the reconstruction algorithm
 #mus = [ 1e1 ]
 
-dens_type  = [ "rad", "inf", "th_is", "th_anis", "l" ] # types of densities to compute
+dens_type  = [ "rad_"+str(decay)+"_"+str(cutoff) for decay in decays for cutoff in cutoffs ] # types of densities to compute
+cs_dens_type = [ "inf", "th_is", "th_anis", "l" ]
+dens_type = dens_type + cs_dens_type
 
 img_list = extract_images( "../brain_images/fastmri/file1000001.h5", "h5", 
                           img_size = img_size, num_images = num_imgs ) # images to reconstruct
@@ -78,20 +83,26 @@ print("S distribution:")
 print( s_distrib )
 
 
-####### Compute pi radial
-pi_rad = pi_rad( 2, 0.2, np.array( [ img_size, img_size ] ) )
-#
 ####### Compute CS densities pi
 print( "Calculate pi, vector size:", img_size**2 )
 pi = {}
-pi[ "rad" ] = pi_rad.flatten()
+
+# Calculate pi_rad
+for decay in decays:
+    for cutoff in cutoffs:
+        pi_radial = pi_rad( decay, cutoff, np.array( [ img_size, img_size ] ) )
+        pi[ "rad_"+str(decay)+"_"+str(cutoff) ] = pi_radial.flatten()
+
+
 pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, scheme_type,
   full_kspace, reg_type, cond, lam, wavelet, level, s_distrib, blocks_list )
 
 ####### Unravel pi vectors
-pi_fl = unravel_pi( pi, dens_type[ 1: ], blocks_list, full_kspace.shape[ 0 ] )
-pi_fl[ "rad" ] = pi[ "rad"].flatten()
-
+pi_fl = unravel_pi( pi, cs_dens_type, blocks_list, full_kspace.shape[ 0 ] )
+for decay in decays:
+    for cutoff in cutoffs:
+        pi_fl[ "rad_"+str(decay)+"_"+str(cutoff) ] = pi[ "rad_"+str(decay)+"_"+str(cutoff) ]
+        
 
 ####### Initialize variables to keep track of ssim, mu, num_points
 good_ssim, good_mu, num_points = {}, {}, {}
@@ -125,8 +136,8 @@ for pi_type in dens_type:
         )
     
     
-        cur_mu = 0
-        cur_ssims = []
+        cur_mu = [] # stores mu corresponding to the best ssim for every image
+        cur_ssims = [] # stores best ssim for every image
         
         for j in range( num_imgs ):
         
@@ -134,6 +145,7 @@ for pi_type in dens_type:
             kspace_obs = fourier_op.op( img )
         
             cur_ssims.append( 0 )
+            cur_mu.append( mus[ 0 ] )
                 
             for mu in mus:
                 #print(mu)
@@ -150,8 +162,9 @@ for pi_type in dens_type:
                 
                 if ssim( x_final, img ) > cur_ssims[ -1 ]:
                     cur_ssims[ -1 ] = ssim( x_final, img )
+                    cur_mu[ -1 ] = mu
 
-        good_mu[ pi_type ][ i ] = 0
+        good_mu[ pi_type ][ i ] = np.mean( cur_mu )
         good_ssim[ pi_type ][ i ] = np.mean( cur_ssims )
 
 
