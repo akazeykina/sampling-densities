@@ -22,13 +22,13 @@ from modopt.opt.linear import Identity
 from modopt.math.metrics import ssim
 
 from densities_calculation.mask import compute_indices
-from densities_calculation.utils import extract_images
+from densities_calculation.utils import extract_images, nrmse
 from densities_calculation.s_distribution import avg_s_distribution
 from densities_calculation.calculate_densities import calculate_pi_blocks, pi_rad, unravel_pi
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
 from reconstruction.fourier import masked_fourier_op
 
-img_size = 32
+img_size = 256
 n = img_size ** 2
 
 wavelet = 'sym4'
@@ -105,9 +105,10 @@ for decay in decays:
         
 
 ####### Initialize variables to keep track of ssim, mu, num_points
-good_ssim, good_mu, num_points = {}, {}, {}
+good_ssim, good_nrmse, good_mu, num_points = {}, {}, {}, {}
 for pi_type in dens_type:
     good_ssim[ pi_type ] = np.zeros( num_runs )
+    good_nrmse[ pi_type ] = np.zeros( num_runs )
     good_mu[ pi_type ] = np.zeros( num_runs )
     #num_points[ pi_type ] = []
 
@@ -138,6 +139,7 @@ for pi_type in dens_type:
     
         cur_mu = [] # stores mu corresponding to the best ssim for every image
         cur_ssims = [] # stores best ssim for every image
+        cur_nrmse = []
         
         for j in range( num_imgs ):
         
@@ -146,6 +148,7 @@ for pi_type in dens_type:
         
             cur_ssims.append( 0 )
             cur_mu.append( mus[ 0 ] )
+            cur_nrmse.append( 1.0 )
                 
             for mu in mus:
                 #print(mu)
@@ -163,9 +166,12 @@ for pi_type in dens_type:
                 if ssim( x_final, img ) > cur_ssims[ -1 ]:
                     cur_ssims[ -1 ] = ssim( x_final, img )
                     cur_mu[ -1 ] = mu
+                if nrmse( x_final, img ) < cur_nrmse[ -1 ]:
+                    cur_nrmse[ -1 ] = nrmse( x_final, img )
 
         good_mu[ pi_type ][ i ] = np.mean( cur_mu )
         good_ssim[ pi_type ][ i ] = np.mean( cur_ssims )
+        good_nrmse[ pi_type ][ i ] = np.mean( cur_nrmse )
 
 
 ####### Display results
@@ -175,5 +181,6 @@ print( "Reconstruction time:", time.time() - start_time )
 for pi_type in dens_type:
     print( "Pi type:", pi_type, ", SSIM mean:", np.mean( good_ssim[ pi_type ] ),
           ", SSIM std:", np.std( good_ssim[ pi_type ] ) )
+    print( "NRMSE mean:", np.mean( good_nrmse[ pi_type ] ), "NRMSE std:", np.std( good_nrmse[ pi_type ] )  )
     print( "Mu mean:", np.mean( good_mu[ pi_type ] ), "mu std:", np.std( good_mu[ pi_type ] )  )
 
