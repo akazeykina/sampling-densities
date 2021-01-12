@@ -17,7 +17,7 @@ from densities_calculation.generate_scheme import generate_full_scheme, generate
 from densities_calculation.utils import extract_images, reduce_img_size
 
 
-img_size = 32
+img_size = 64
 n = img_size**2
 wavelet = 'sym4'
 level = 3
@@ -39,9 +39,9 @@ cutoff = 0.2 # cutoff for pi_rad
 
 ####### Distribution of sparsity coefficients
 
-#img_s_distrib_list = extract_images( "../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
+img_s_distrib_list = extract_images( "../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
 #img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
-img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
+#img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
 
 
 s_distrib = avg_s_distribution( img_size, img_s_distrib_list, wavelet, level, sparsity )
@@ -83,7 +83,7 @@ for i in range( 5 ):
     ax = fig.add_subplot(1, 5, i + 1 )
     plt.imshow( reduce_img_size( img_size, img_s_distrib_list[ i * 2 + 1 ] ), cmap = 'gray' )
     
-plt.savefig( pics_dir+'fastmri_images.png', bbox_inches='tight')
+plt.savefig( pics_dir+'oasis_T2w_images.png', bbox_inches='tight')
 #plt.show()
 
 ###### Prepare densities
