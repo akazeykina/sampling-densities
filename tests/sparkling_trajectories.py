@@ -37,9 +37,12 @@ ns = 64 # number of samples per shot; nc = 13, ns = 1024 correspond to s/s facto
 ######## Create directory for pictures
 
 script_dir = os.path.dirname( __file__ )
-results_dir = os.path.join( script_dir, 'pictures/sparkling_trajectories/' )
-if not os.path.isdir( results_dir ):
-    os.makedirs( results_dir )
+pics_dir = os.path.join( script_dir, 'pictures/sparkling_trajectories/' )
+if not os.path.isdir( pics_dir ):
+    os.makedirs( pics_dir )
+kpoints_dir = os.path.join( script_dir, 'kpoints/' )
+if not os.path.isdir( kpoints_dir ):
+    os.makedirs( kpoints_dir )
 
 init = copy.deepcopy(INITIALIZATION_2D)
 init['dist_params']['mask'] = False
@@ -58,7 +61,7 @@ in_kspace_loc = np.pi * convert_NCxNSxD_to_NCNSxD( inObj.traj_params.init_shots 
 fig = plt.figure()
 ax = fig.add_subplot( 1, 1, 1 )
 ax.scatter( in_kspace_loc[ :, 0 ], in_kspace_loc[ :, 1 ], s = 1 )
-plt.savefig( results_dir+'initial_kspace_points.png', bbox_inches='tight')
+plt.savefig( pics_dir+'initial_kspace_points.png', bbox_inches='tight')
 #plt.show()
 
 kspace_loc = {}
@@ -69,6 +72,7 @@ for pi_type in dens_type:
     init['dist_params']['cutoff'] = None
     init['dist_params']['decay'] = None
     kspace_loc[ pi_type ] = get_sparkling( init, verbose = 10 )
+    np.save( "kpoints/sparkling_"+pi_type+"_"+str(img_size)+".npy", kspace_loc[ pi_type ] )
     
     
 ####### Plot the resulting trajectories
@@ -80,7 +84,7 @@ for i, pi_type in enumerate( dens_type ):
     ax.scatter( kspace_loc[ pi_type ][ :, 0 ], kspace_loc[ pi_type ][ :, 1 ], s = 1 )
     ax.set_aspect( 'equal' )
     
-plt.savefig( results_dir+'trajectories.png', bbox_inches='tight')
+plt.savefig( pics_dir+'trajectories.png', bbox_inches='tight')
     
     
     
