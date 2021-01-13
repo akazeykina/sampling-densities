@@ -81,7 +81,7 @@ def dr1( y, A, At, niter, gamma, pr ):
     y = y / norm_y
     
     #Parameters of Douglas Rachford 
-    lam=1.5
+    lam=1#1.5
 
     z = np.zeros( ( At( y ) ).shape ) # z is of size nx1
     L1 = np.zeros( niter )
@@ -92,7 +92,7 @@ def dr1( y, A, At, niter, gamma, pr ):
         z = z + lam * ( prox_l1( 2 * x - z, gamma ) - x )
         
         L1[ i ] = np.sum( np.abs( x ) )
-        err[ i ] = np.linalg.norm( y - np.dot( A, x ) )
+        err[ i ] = np.linalg.norm( y - A( x ) )
 
     if pr:
         plt.figure()
@@ -105,3 +105,30 @@ def dr1( y, A, At, niter, gamma, pr ):
     rec = x * norm_y
     
     return rec
+
+if __name__ == "__main__":
+    
+    np.random.seed( 0 )
+    n = 400
+    p = round( n / 4 )
+    A_matr = np.random.randn( p, n ) / np.sqrt( p )
+    AH = np.conj( A_matr.T )
+    A = lambda x: np.dot( A_matr, x ) 
+    At = lambda y: np.dot( AH, np.dot( np.linalg.inv( np.dot( A_matr, AH ) ), y ) )
+    
+    s = 17
+    sel = np.random.permutation( n )
+    x0 = np.zeros( ( n, 1 ) )
+    x0[ sel[ 0 : s ] ] = 1
+    
+    y = np.dot( A_matr, x0 )
+    
+    niter = 500
+    
+    x_final = dr1( y, A, At, niter, 1e-2, True )
+    
+    fig = plt.figure()
+    plt.plot( x0, 'b' )
+    plt.plot( x_final, 'r' )
+    plt.show()
+
