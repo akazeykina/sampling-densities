@@ -81,7 +81,7 @@ def dr1( y, A, At, niter, gamma, pr ):
     y = y / norm_y
     
     #Parameters of Douglas Rachford 
-    lam=1#1.5
+    lam = 1#1.5
 
     z = np.zeros( ( At( y ) ).shape ) # z is of size nx1
     L1 = np.zeros( niter )
