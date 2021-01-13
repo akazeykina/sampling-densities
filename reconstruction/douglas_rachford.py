@@ -51,7 +51,7 @@ def proj_set( x, y, A, At ):
     """
     return x + At( y - A( x ) )
 
-def dr1( y, A, At, niter, gamma, plot_error ):
+def dr1( y, A, At, niter, gamma, plot_error = False ):
     """
     Implementation of the Douglas-Rachford algorithm to solve min ||x||_1 under constraint y = Ax
     
