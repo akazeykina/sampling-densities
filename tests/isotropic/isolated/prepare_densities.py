@@ -13,7 +13,8 @@ import numpy as np
 #matplotlib.use('TkAgg')
 import time
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
 from mri.operators import WaveletN
 
@@ -58,10 +59,10 @@ dens_type  = [ "rad_"+str(decay)+"_"+str(cutoff) for decay in decays for cutoff 
 cs_dens_type = [ "inf", "th_is", "th_anis", "l" ]
 dens_type = dens_type + cs_dens_type
 
-img_list = extract_images( "../brain_images/fastmri/file1000001.h5", "h5", 
+img_list = extract_images( "../../../brain_images/fastmri/file1000001.h5", "h5", 
                           img_size = img_size, num_images = num_imgs ) # images to reconstruct
 
-img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5", 
+img_s_distrib_list = extract_images( "../../../brain_images/fastmri/file1000265.h5", "h5", 
                                     img_size = img_size ) # images for calculation of s
 
 linear_op = WaveletN( wavelet_name = wavelet, nb_scale = level, padding_mode = 'periodization' )

@@ -9,7 +9,8 @@ import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
 from densities_calculation.mask import compute_mask
 from densities_calculation.s_distribution import avg_s_distribution
@@ -41,7 +42,7 @@ dens_type  = [ "rad", "inf", "th_is", "th_anis", "l" ] # types of densities to c
 
 #img_s_distrib_list = extract_images( "../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
 #img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
-img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
+img_s_distrib_list = extract_images( "../../../brain_images/fastmri/file1000265.h5", "h5" )
 
 
 s_distrib = avg_s_distribution( img_size, img_s_distrib_list, wavelet, level, sparsity )

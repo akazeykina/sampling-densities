@@ -24,10 +24,7 @@ sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
 from mri.operators import WaveletN
-from mri.reconstructors import SingleChannelReconstructor
 
-from modopt.opt.proximity import SparseThreshold #, ElasticNet, OrderedWeightedL1Norm
-from modopt.opt.linear import Identity
 from modopt.math.metrics import ssim
 
 from densities_calculation.mask import compute_indices
@@ -35,6 +32,7 @@ from densities_calculation.utils import extract_images, nrmse
 from densities_calculation.calculate_densities import unravel_pi
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
 from reconstruction.fourier import masked_fourier_op
+from reconstruction.douglas_rachford import dr1
 
 img_size = 32
 n = img_size ** 2
@@ -45,16 +43,16 @@ scheme_type = 'cartesian'
 block_type = 'isolated'
     
 
-decays = [] #[ 2, 4, 6 ] # decays of pi_radial
-cutoffs = [] #[ 0.1, 0.2, 0.3 ] #cutoffs of pi_radial
+decays = [] # [ 2, 4, 6 ] # decays of pi_radial
+cutoffs = [] # [ 0.1, 0.2, 0.3 ] #cutoffs of pi_radial
     
 sub_sampling_rate = 0.2
 
 num_runs = 1 # number of runs of reconstruction algorithm
 num_imgs = 1 # number of images over which the result of reconstruction is averaged
 
-mus = np.logspace( -4, -6, 4 ) # regularisation parameter of the reconstruction algorithm
-#mus = [ 1e1 ]
+mus = np.logspace( -6, -9, 4 ) # regularisation parameter of the reconstruction algorithm
+#mu = [ 1e-2 ]
 
 #dens_type  = [ "rad_"+str(decay)+"_"+str(cutoff) for decay in decays for cutoff in cutoffs ] # types of densities to compute
 #cs_dens_type = [ "inf", "th_is", "th_anis", "l" ]
@@ -66,8 +64,7 @@ img_list = extract_images( "../../../brain_images/fastmri/file1000001.h5", "h5",
                           img_size = img_size, num_images = num_imgs ) # images to reconstruct
 
 linear_op = WaveletN( wavelet_name = wavelet, nb_scale = level, padding_mode = 'periodization' )
-
-regularizer_op = SparseThreshold( Identity(), 2e-7, thresh_type = "soft" )
+linear_op.op( img_list[ 0 ] )
 
 
 ######## Generate points of kspace and blocks of points
@@ -111,17 +108,9 @@ for pi_type in dens_type:
         
         fourier_op = masked_fourier_op( img_size, full_kspace, [], 
                                        blocks_list[ 0: ], pi_fl[ pi_type ], pi_mask, normalize = False )
-
-        # Setup Reconstructor
-        reconstructor = SingleChannelReconstructor(
-            fourier_op = fourier_op,
-            linear_op = linear_op,
-            regularizer_op = regularizer_op,
-            gradient_formulation = 'synthesis',
-            num_check_lips = 0,
-            verbose = 0,
-        )
-    
+        A = lambda x: fourier_op.op( linear_op.adj_op( x ) )
+        At = lambda y: linear_op.op( fourier_op.adj_op( y ) )
+        
     
         cur_mu = [] # stores mu corresponding to the best ssim for every image
         cur_ssims = [] # stores best ssim for every image
@@ -131,23 +120,22 @@ for pi_type in dens_type:
         
             img = img_list[ j ]
             kspace_obs = fourier_op.op( img )
+            num_obs = kspace_obs.size
+            
+            z = At( kspace_obs )
+            print( At( kspace_obs ).shape )
+            print( A( z ).shape )
         
             cur_ssims.append( 0 )
             cur_mu.append( mus[ 0 ] )
             cur_nrmse.append( 1.0 )
                 
             for mu in mus:
-                #print(mu)
-                reconstructor.prox_op.weights = mu
             
-            
-                x_final, costs, metric = reconstructor.reconstruct(
-                        kspace_data = kspace_obs,
-                        optimization_alg = 'fista',
-                        num_iterations = 150,
-                        #metrics=metrics,
-                        #lambda_update_params = { "restart_strategy":"greedy", "s_greedy":1.1, "xi_restart":0.96 }
-                )
+                
+                coef_final = dr1( kspace_obs, A, At, 
+                                 niter = 150, gamma = mu, plot_error = True )
+                x_final = linear_op.adj_op( coef_final )
                 
                 if ssim( x_final, img ) > cur_ssims[ -1 ]:
                     cur_ssims[ -1 ] = ssim( x_final, img )

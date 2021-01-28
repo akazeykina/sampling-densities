@@ -9,7 +9,8 @@ import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
 
 from densities_calculation.s_distribution import avg_s_distribution
 from densities_calculation.calculate_densities import pi_rad, calculate_pi_blocks, unravel_pi
@@ -39,7 +40,7 @@ cutoff = 0.2 # cutoff for pi_rad
 
 ####### Distribution of sparsity coefficients
 
-img_s_distrib_list = extract_images( "../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
+img_s_distrib_list = extract_images( "../../../../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
 #img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
 #img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
 

@@ -15,7 +15,8 @@ import numpy as np
 #matplotlib.use('TkAgg')
 import time
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
 
 from mri.operators import WaveletN
 from mri.reconstructors import SingleChannelReconstructor
@@ -50,7 +51,7 @@ dens_type  = [ "rad_"+str(decay)+"_"+str(cutoff) for decay in decays for cutoff 
 cs_dens_type = [ "inf", "th_is", "th_anis", "l" ]
 dens_type = dens_type + cs_dens_type
 
-img_list = extract_images( "../brain_images/T2w/sub-OAS30007_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w", 
+img_list = extract_images( "../../../../brain_images/T2w/sub-OAS30007_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w", 
                           img_size = img_size, num_images = num_imgs ) # images to reconstruct
                                     
 
