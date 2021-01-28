@@ -228,11 +228,11 @@ def pi_rad_for_lines( decay, cutoff, num_lines ):
     pi_rad = np.zeros( ( num_lines, 1 ) )
     
     indices = np.arange( - num_lines // 2, num_lines // 2 )
-    norm = np.abs( indices )
-    pi_rad = np.power( np.abs( indices ), -decay )
+    norm = ( np.abs( indices ) ).astype( 'float' )
+    pi_rad = np.power( norm, -decay )
     
     ind = num_lines // 2 + ( num_lines * cutoff // 2 ).astype( 'int' ) - 1
-    pi_rad[ norm < norm[ ind ] ] = pi_rad[ ind ]
+    pi_rad[ norm < norm[ ind ], : ] = pi_rad[ ind, : ]
     
     pi_rad = pi_rad / np.sum( pi_rad )
     
