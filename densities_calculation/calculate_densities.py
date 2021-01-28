@@ -7,7 +7,6 @@ Created on Fri Apr 24 17:48:13 2020
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import time
 import scipy
 
@@ -206,6 +205,38 @@ def pi_rad( decay, cutoff, im_size ):
     density = density / ( np.sum( density ) )
     
     return density
+
+def pi_rad_for_lines( decay, cutoff, num_lines ):
+    """
+    Calculate radial density that is a power decay function |x|^{-d} with cutoff for cartesian lines
+    
+    Parameters
+    ----------
+    decay: real
+        d (positive)
+    cutoff: real
+        percentage of kspace where pi_rad is constant (between 0.0 and 1.0)
+    num_lines: int
+        number of lines
+    
+    Returns
+    -------
+    pi_rad: ndarray
+        radial density, array of shape ( num_lines, 1 )
+    """
+    
+    pi_rad = np.zeros( ( num_lines, 1 ) )
+    
+    indices = np.arange( - num_lines // 2, num_lines // 2 )
+    norm = np.abs( indices )
+    pi_rad = np.power( np.abs( indices ), -decay )
+    
+    ind = num_lines // 2 + ( num_lines * cutoff // 2 ).astype( 'int' ) - 1
+    pi_rad[ norm < norm[ ind ] ] = pi_rad[ ind ]
+    
+    pi_rad = pi_rad / np.sum( pi_rad )
+    
+    return pi_rad
 
 def unravel_pi( pi, dens_type, blocks_list, num_kpoints ):
     """
