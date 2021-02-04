@@ -23,13 +23,13 @@ from densities_calculation.s_distribution import avg_s_distribution
 from densities_calculation.calculate_densities import calculate_pi_blocks, pi_rad_for_lines
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list
 
-img_size = 32
+img_size = 64
 n = img_size ** 2
 
 wavelet = 'sym4'
 level = 3
 scheme_type = 'cartesian'
-block_type = 'vert_lines' #type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
+block_type = 'hor_lines' #type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
         #"circles" or "radia" for radial scheme, "circles" or "spokes" for spiral.
 
 reg_type = 'svd'

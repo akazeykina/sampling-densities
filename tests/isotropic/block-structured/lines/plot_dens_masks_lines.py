@@ -26,13 +26,13 @@ from densities_calculation.calculate_densities import unravel_pi
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
 
 
-img_size = 32
+img_size = 64
 n = img_size**2
 wavelet = 'sym4'
 level = 3
 
 scheme_type = 'cartesian'
-block_type = 'vert_lines' # #type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
+block_type = 'hor_lines' # #type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
         #"circles" or "radia" for radial scheme, "circles" or "spokes" for spiral.
 
 # Parameters for calculating the pseudoinverse
@@ -72,8 +72,9 @@ for pi_type in dens_type:
 #
 mask_fl = unravel_pi( pi_mask, dens_type, blocks_list, full_kspace.shape[ 0 ] ) 
 mask = {}
+reshape_order = 'C' if block_type == 'hor_lines' else 'F'
 for pi_type in dens_type:
-    mask[ pi_type ] = np.reshape( mask_fl[ pi_type ], ( img_size, img_size ), order = 'C' )
+    mask[ pi_type ] = np.reshape( mask_fl[ pi_type ], ( img_size, img_size ), order = reshape_order )
 
 ##############################################################################
 
