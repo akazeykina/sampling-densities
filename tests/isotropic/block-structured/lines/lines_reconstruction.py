@@ -21,7 +21,7 @@ import numpy as np
 import time
 
 sys.path.append(os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
 
 from mri.operators import WaveletN
 from mri.reconstructors import SingleChannelReconstructor

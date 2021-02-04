@@ -18,7 +18,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
 
 from densities_calculation.mask import compute_mask
 #from densities_calculation.s_distribution import avg_s_distribution
