@@ -60,7 +60,8 @@ pi_rad = pi_rad( 2, 0.2, np.array( [ img_size, img_size ] ) )
 ####### Compute CS densities pi
 print( "Calculate pi, vector size:", img_size**2 )
 pi = {}
-pi[ "rad" ] = pi_rad.flatten()
+#pi[ "rad" ] = pi_rad.flatten()
+pi[ "rad" ] = np.reshape( pi_rad, ( img_size **2, 1 ), order = 'C' )
 pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, scheme_type,
   full_kspace, reg_type, cond, lam, wavelet, level, s_distrib, blocks_list )
 
@@ -68,7 +69,7 @@ pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_si
 ####### Compute masks
 pi_mask = {}
 for pi_type in dens_type:
-    pi_mask[ pi_type ] = compute_mask( pi[ pi_type ], nb_samples )
+    pi_mask[ pi_type ] = np.reshape( compute_mask( pi[ pi_type ], nb_samples ), ( img_size, img_size ), order = 'C' )
 #
 
 

@@ -29,7 +29,7 @@ n = img_size ** 2
 wavelet = 'sym4'
 level = 3
 scheme_type = 'cartesian'
-block_type = 'hor_lines' #type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
+block_type = 'vert_lines' #type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
         #"circles" or "radia" for radial scheme, "circles" or "spokes" for spiral.
 
 reg_type = 'svd'

@@ -46,13 +46,12 @@ def compute_mask( pi, nb_samples ):
     ndarray
         Matrix of shape (img_size, img_size) of 0 and 1 with 1 corresponding to sampled points
     """
-    img_size = int( np.sqrt( pi.size ) )
-    mask = np.zeros( ( pi.size, ) )
+    mask = np.zeros( pi.shape )
     
     indices = compute_indices( pi, nb_samples )
-    mask[ indices ] = 1
+    mask[ indices, : ] = 1
     
-    return np.reshape( mask, ( img_size, img_size ), order = 'C' )
+    return mask
 
 
 

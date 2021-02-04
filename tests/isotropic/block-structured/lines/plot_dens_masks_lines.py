@@ -32,7 +32,7 @@ wavelet = 'sym4'
 level = 3
 
 scheme_type = 'cartesian'
-block_type = 'hor_lines' # #type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
+block_type = 'vert_lines' # #type of blocks of points: "isolated" for all schemes; "hor_lines" or "vert_lines" for cartesian scheme,
         #"circles" or "radia" for radial scheme, "circles" or "spokes" for spiral.
 
 # Parameters for calculating the pseudoinverse
@@ -71,6 +71,9 @@ for pi_type in dens_type:
     pi_mask[ pi_type ] = compute_mask( pi[ pi_type ], nb_samples )
 #
 mask_fl = unravel_pi( pi_mask, dens_type, blocks_list, full_kspace.shape[ 0 ] ) 
+mask = {}
+for pi_type in dens_type:
+    mask[ pi_type ] = np.reshape( mask_fl[ pi_type ], ( img_size, img_size ), order = 'C' )
 
 ##############################################################################
 
@@ -117,7 +120,7 @@ fig = plt.figure( figsize = ( 30, 5 ) )
 
 for i, pi_type in enumerate( dens_type ):
     ax = fig.add_subplot(1, 5, i + 1 )
-    plt.imshow(mask_fl[ pi_type ], cmap='gray' )
+    plt.imshow(mask[ pi_type ], cmap='gray' )
     
 plt.savefig( results_dir+'masks.png', bbox_inches='tight')
 #plt.show()
