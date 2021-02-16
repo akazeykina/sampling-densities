@@ -35,8 +35,8 @@ sparsity = 0.1 # sparsity level: assume that only s = 'sparsity' wavelets coeffi
 
 dens_type  = [ "rad", "inf", "th_is", "th_anis", "l" ] # types of densities to compute
 
-decay = 2 # decay for pi_rad
-cutoff = 0.2 # cutoff for pi_rad
+decay = 4 # decay for pi_rad
+cutoff = 0.1 # cutoff for pi_rad
 
 ####### Distribution of sparsity coefficients
 
