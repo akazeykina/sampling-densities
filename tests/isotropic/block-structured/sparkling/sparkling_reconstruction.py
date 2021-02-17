@@ -131,7 +131,7 @@ for pi_type in dens_type:
             if ssim( x_final, img ) > cur_ssims:
                 cur_ssims = ssim( x_final, img )
                 cur_mu = mu
-            if nrmse( x_final, img ) < cur_nrmse[ -1 ]:
+            if nrmse( x_final, img ) < cur_nrmse:
                 cur_nrmse = nrmse( x_final, img )
 
         good_mu[ pi_type ][ j ] = cur_mu
