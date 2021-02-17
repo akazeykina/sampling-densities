@@ -106,18 +106,14 @@ for pi_type in dens_type:
     )
 
 
-    cur_mu = [] # stores mu corresponding to the best ssim for every image
-    cur_ssims = [] # stores best ssim for every image
-    cur_nrmse = []
-    
     for j in range( num_imgs ):
     
         img = img_list[ j ]
         kspace_obs = fourier_op.op( img )
     
-        cur_ssims.append( 0 )
-        cur_mu.append( mus[ 0 ] )
-        cur_nrmse.append( 1.0 )
+        cur_ssims = 0
+        cur_mu = mus[ 0 ]
+        cur_nrmse = 1.0
             
         for mu in mus:
             #print(mu)
@@ -132,11 +128,11 @@ for pi_type in dens_type:
                     #lambda_update_params = { "restart_strategy":"greedy", "s_greedy":1.1, "xi_restart":0.96 }
             )
             
-            if ssim( x_final, img ) > cur_ssims[ -1 ]:
-                cur_ssims[ -1 ] = ssim( x_final, img )
-                cur_mu[ -1 ] = mu
+            if ssim( x_final, img ) > cur_ssims:
+                cur_ssims = ssim( x_final, img )
+                cur_mu = mu
             if nrmse( x_final, img ) < cur_nrmse[ -1 ]:
-                cur_nrmse[ -1 ] = nrmse( x_final, img )
+                cur_nrmse = nrmse( x_final, img )
 
         good_mu[ pi_type ][ j ] = cur_mu
         good_ssim[ pi_type ][ j ] = cur_ssims
