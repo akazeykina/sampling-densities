@@ -45,22 +45,22 @@ scheme_type = 'cartesian'
 block_type = 'isolated'
     
 
-decays = [] #[ 2, 4, 6 ] # decays of pi_radial
-cutoffs = [] #[ 0.1, 0.2, 0.3 ] #cutoffs of pi_radial
+decays = [ 2, 4, 6 ] # decays of pi_radial
+cutoffs = [ 0.1, 0.2, 0.3 ] #cutoffs of pi_radial
     
 sub_sampling_rate = 0.2
 
-num_runs = 1 # number of runs of reconstruction algorithm
-num_imgs = 1 # number of images over which the result of reconstruction is averaged
+num_runs = 5 # number of runs of reconstruction algorithm
+num_imgs = 5 # number of images over which the result of reconstruction is averaged
 
 mus = np.logspace( -4, -6, 4 ) # regularisation parameter of the reconstruction algorithm
 #mus = [ 1e1 ]
 
-#dens_type  = [ "rad_"+str(decay)+"_"+str(cutoff) for decay in decays for cutoff in cutoffs ] # types of densities to compute
-#cs_dens_type = [ "inf", "th_is", "th_anis", "l" ]
-#dens_type = dens_type + cs_dens_type
-dens_type = [ "l" ]
-cs_dens_type = [ "l" ]
+dens_type  = [ "rad_"+str(decay)+"_"+str(cutoff) for decay in decays for cutoff in cutoffs ] # types of densities to compute
+cs_dens_type = [ "inf", "th_is", "th_anis", "l" ]
+dens_type = dens_type + cs_dens_type
+#dens_type = [ "l" ]
+#cs_dens_type = [ "l" ]
 
 img_list = extract_images( "../../../brain_images/fastmri/file1000001.h5", "h5", 
                           img_size = img_size, num_images = num_imgs ) # images to reconstruct

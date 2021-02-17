@@ -18,16 +18,10 @@ sys.path.append(os.path.dirname(os.path.dirname(
 
 from mri.operators import WaveletN
 
-from modopt.opt.proximity import SparseThreshold #, ElasticNet, OrderedWeightedL1Norm
-from modopt.opt.linear import Identity
-from modopt.math.metrics import ssim
-
-from densities_calculation.mask import compute_indices
-from densities_calculation.utils import extract_images, nrmse
+from densities_calculation.utils import extract_images
 from densities_calculation.s_distribution import avg_s_distribution
-from densities_calculation.calculate_densities import calculate_pi_blocks, pi_rad, unravel_pi
+from densities_calculation.calculate_densities import calculate_pi_blocks, pi_rad
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
-from reconstruction.fourier import masked_fourier_op
 
 img_size = 32
 n = img_size ** 2
@@ -49,18 +43,10 @@ cutoffs = [ 0.1, 0.2, 0.3 ] #cutoffs of pi_radial
     
 sub_sampling_rate = 0.2
 
-num_runs = 5 # number of runs of reconstruction algorithm
-num_imgs = 5 # number of images over which the result of reconstruction is averaged
-
-gammas = np.logspace( 0, -3, 4 ) # regularisation parameter of the reconstruction algorithm
-#mus = [ 1e1 ]
 
 dens_type  = [ "rad_"+str(decay)+"_"+str(cutoff) for decay in decays for cutoff in cutoffs ] # types of densities to compute
 cs_dens_type = [ "inf", "th_is", "th_anis", "l" ]
 dens_type = dens_type + cs_dens_type
-
-img_list = extract_images( "../../../brain_images/fastmri/file1000001.h5", "h5", 
-                          img_size = img_size, num_images = num_imgs ) # images to reconstruct
 
 img_s_distrib_list = extract_images( "../../../brain_images/fastmri/file1000265.h5", "h5", 
                                     img_size = img_size ) # images for calculation of s

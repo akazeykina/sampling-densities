@@ -32,6 +32,9 @@ reg_type = 'svd'
 cond = 0.0
 lam = 0.0
 
+decay = 4
+cutoff = 0.1
+
 sparsity = 0.1 # sparsity level: assume that only s = 'sparsity' wavelets coefficients are non zero
 
 sub_sampling_rate = 0.2
@@ -42,7 +45,7 @@ dens_type  = [ "rad", "inf", "th_is", "th_anis", "l" ] # types of densities to c
 
 #img_s_distrib_list = extract_images( "../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
 #img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
-img_s_distrib_list = extract_images( "../../../brain_images/fastmri/file1000265.h5", "h5" )
+img_s_distrib_list = extract_images( "../../../brain_images/fastmri/file1000265.h5", "h5", img_size = img_size )
 
 
 s_distrib = avg_s_distribution( img_size, img_s_distrib_list, wavelet, level, sparsity )
@@ -55,7 +58,7 @@ nb_samples = num_samples( sub_sampling_rate, scheme_type, blocks_list, [], block
 
 
 ####### Compute pi radial
-pi_rad = pi_rad( 2, 0.2, np.array( [ img_size, img_size ] ) )
+pi_rad = pi_rad( decay, cutoff, np.array( [ img_size, img_size ] ) )
 #
 ####### Compute CS densities pi
 print( "Calculate pi, vector size:", img_size**2 )
