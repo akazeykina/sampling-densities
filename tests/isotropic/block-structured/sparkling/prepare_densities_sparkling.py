@@ -19,7 +19,7 @@ from densities_calculation.utils import extract_images, reduce_img_size
 
 
 img_size = 64
-n = img_size**2
+n = img_size ** 2
 wavelet = 'sym4'
 level = 3
 
@@ -40,7 +40,9 @@ cutoff = 0.1 # cutoff for pi_rad
 
 ####### Distribution of sparsity coefficients
 
-img_s_distrib_list = extract_images( "../../../../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
+img_s_distrib_list = extract_images( 
+        "../../../../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w",
+        img_size = img_size )
 #img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
 #img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
 
