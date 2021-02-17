@@ -81,7 +81,7 @@ fig = plt.figure( figsize = ( 30, 5 ) )
 
 for i, pi_type in enumerate( dens_type ):
     ax = fig.add_subplot(1, len( dens_type ), i + 1 )
-    ax.scatter( kspace_loc[ pi_type ][ :, 0 ], kspace_loc[ pi_type ][ :, 1 ], s = 1 )
+    ax.scatter( kspace_loc[ pi_type ][ :, 1 ], kspace_loc[ pi_type ][ :, 0 ], s = 1 )
     ax.set_aspect( 'equal' )
     
 plt.savefig( pics_dir+'trajectories.png', bbox_inches='tight')

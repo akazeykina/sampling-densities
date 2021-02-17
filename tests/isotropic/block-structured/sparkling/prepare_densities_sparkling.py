@@ -108,7 +108,8 @@ fig = plt.figure( figsize = ( 30, 5 ) )
 
 for i, pi_type in enumerate( dens_type ):
     ax = fig.add_subplot(1, 5, i + 1 )
-    ax.imshow( np.reshape( pi_fl[ pi_type ], ( img_size, img_size ), order = 'C' ) )
+    ax.tricontourf( full_kspace[ :, 1 ], full_kspace[ :, 0 ], pi_fl[ pi_type ],
+               vmin = val_min, vmax = val_max )
     ax.set_aspect( 'equal' )
     
 plt.savefig( pics_dir+'densities.png', bbox_inches='tight' )
