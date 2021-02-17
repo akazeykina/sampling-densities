@@ -7,8 +7,6 @@ Created on Tue Sep 29 11:55:46 2020
 """
 import numpy as np
 
-from densities_calculation.utils import split_det_rand
-
 def generate_full_scheme( scheme_type, block_type, img_size, num_revolutions = 1 ):
     """
     Generate points of the full scheme in k-space
@@ -167,7 +165,53 @@ def num_samples( sub_sampling_rate, scheme_type, blocks_list, det_blocks_list, r
         nb_samples = int( sub_sampling_rate * len(rand_blocks_list) * 2 / np.pi )
     return nb_samples
 
+    
+def split_det_rand( img_size, blocks_list, spl_type = None, det_portion = 0.0 ):
+    """
+    Split the blocks into deterministically chosen and randomly sampled
+    
+    Parameters
+    ----------    
+    img_size: int
+        desired size of the image (typically power of 2)
+    blocks_list: list
+        list of blocks of points
+    spl_type: string
+        'none': choose deterministically the first several blocks, 
+        'det_center': for radial and spiral schemes choose the central point deterministically
+        'det_central_line': for cartesian scheme choose the central line deterministically 
+    det_portion: float
+        portion of points to be chosen deterministically (between 0.0 and 1.0)
+        
+    Returns
+    -------
+    det_blocks_list: list
+        list of deterministically chosen blocks
+    rand_blocks_list: list
+        list of randomly sampled blocks
+    """
+    
+    if spl_type == 'det_center':
+        det_blocks_list = [ blocks_list[ 0 ] ]
+        rand_blocks_list = blocks_list[ 1 : ]
+    elif spl_type == 'det_central_line':
+        bl_list_copy = blocks_list.copy()
+        det_blocks_list = [ bl_list_copy.pop( img_size //2 ) ]
+        rand_blocks_list = bl_list_copy
+    elif spl_type == 'none':
+        det_last_ind = int( det_portion * len( blocks_list ) )
+        det_blocks_list = blocks_list[ : det_last_ind ]
+        rand_blocks_list = blocks_list[ det_last_ind : ]
+    
+    return det_blocks_list, rand_blocks_list
+    
+
 if __name__ == "__main__":
     full_kspace = generate_full_scheme( 'radial', 'isolated', 64 )
     blocks_list = generate_blocks_list( 'radial', 'isolated', 64 )
-    
+
+
+
+
+
+
