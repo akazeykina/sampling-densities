@@ -92,7 +92,6 @@ start_time = time.time()
 for pi_type in dens_type:
     
     kspace_loc = np.load( "kpoints/sparkling_"+pi_type+"_"+str(img_size)+".npy" ) 
-    kspace_loc[ :, [ 1, 0 ] ] = kspace_loc[ :, [ 0, 1 ] ]
     
     fourier_op = NonCartesianFFT( samples = kspace_loc, shape = ( img_size, img_size ), implementation = 'cpu' )
     
