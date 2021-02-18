@@ -239,7 +239,7 @@ def pi_rad_for_lines( decay, cutoff, num_lines ):
     
     return pi_rad
 
-def unravel_pi( pi, dens_type, blocks_list, num_kpoints ):
+def unravel_pi( pi, dens_type, rand_blocks_list, num_kpoints, dtype = float ):
     """
     Turn a vector of probabilities associated with blocks to a vector of probabilities
     defined for each point of kspace (for plotting)
@@ -250,10 +250,10 @@ def unravel_pi( pi, dens_type, blocks_list, num_kpoints ):
         Dictionary of vectors of probabilities defined for blocks
     dens_type: list
         Density type (e.g. "rad", "inf", "th_is", "th_anis", "l"); keys of pi dictionary
-    blocks_list: list
-        List of sublists of row indices corresponding to blocks of points of kspace
+    rand_blocks_list: list
+        List of sublists of row indices corresponding to blocks of points of kspace that are randomly sampled
     num_kpoints: int
-        Number of kspace points
+        Number of overall kspace points (deterministically and randomly sampled)
     
     Returns
     -------
@@ -262,9 +262,9 @@ def unravel_pi( pi, dens_type, blocks_list, num_kpoints ):
     """
     pi_fl = {}
     for pi_type in dens_type:
-        pi_fl[ pi_type ] = np.zeros( ( num_kpoints, ) )
+        pi_fl[ pi_type ] = np.zeros( ( num_kpoints, ), dtype = dtype )
 
-    for j, block in enumerate( blocks_list ): 
+    for j, block in enumerate( rand_blocks_list ): 
         for pi_type in dens_type:
             pi_fl[ pi_type ][ block ] = pi[ pi_type ][ j, : ]
             

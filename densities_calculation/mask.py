@@ -54,6 +54,29 @@ def compute_mask( pi, nb_samples ):
     return mask
 
 
+def fill_det_blocks( mask, dens_type, det_blocks_list ):
+    """
+    Fill the elements of mask corresponding to deterministically sampled blocks with True
+    
+    Parameters
+    ----------
+    mask: dict
+        Dictionary of masks (of size full_kspace.shape[0])
+    dens_type: list
+        Density type (e.g. "rad", "inf", "th_is", "th_anis", "l"); keys of mask dictionary
+    det_blocks_list: list
+        List of sublists of row indices corresponding to blocks of points of kspace that are deterministically sampled
+    
+    Returns
+    -------
+    pi_fl: dict
+        Unraveled pi
+    """
 
+    for block in det_blocks_list: 
+        for pi_type in dens_type:
+            mask[ pi_type ][ block ] = 1
+            
+    return mask
 
 

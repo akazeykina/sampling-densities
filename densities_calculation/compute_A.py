@@ -8,6 +8,7 @@ Created on Tue Apr 21 10:19:11 2020
 
 import numpy as np
 import scipy
+from tqdm import tqdm
 
 from mri.operators import WaveletN, NonCartesianFFT 
 
@@ -43,9 +44,7 @@ def A_matrix_anisotropic( img_size, wavelet, level, kspace_loc ):
     
     x = np.zeros( ( num_kspace_loc, ) )
     
-    for i in range( num_kspace_loc ):
-        if i%1000 == 0:
-            print( "Calculating A, iteration:", i )
+    for i in tqdm( range( num_kspace_loc ) ):
         
         x[ i ] = 1    
         image = x
