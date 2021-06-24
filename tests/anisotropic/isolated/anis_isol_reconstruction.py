@@ -156,8 +156,9 @@ data = []
 
 for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
     for pi_type in dens_type:
-        data.append( [ meas, pi_type, meas_val[ meas ][ pi_type ][ i ] ] )
+        for i in range( num_runs * num_imgs ):
+            data.append( [ meas, pi_type, meas_val[ meas ][ pi_type ][ i ] ] )
                 
             
-df = pd.DataFrame( data = data, columns = [ 'meas', 'pi_type', 'd', 'c', 'val' ] )
+df = pd.DataFrame( data = data, columns = [ 'meas', 'pi_type', 'val' ] )
 df.to_csv( 'out_data_'+str(img_size)+'.csv' )   
