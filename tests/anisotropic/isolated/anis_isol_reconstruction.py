@@ -19,6 +19,7 @@ import numpy as np
 #import matplotlib
 #matplotlib.use('TkAgg')
 import time
+import pandas as pd
 
 sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
@@ -83,14 +84,11 @@ pi_fl = unravel_pi( pi, dens_type, rand_blocks_list, full_kspace.shape[ 0 ] )
 
         
 
-####### Initialize variables to keep track of ssim, mu, num_points
-good_ssim, good_nrmse, good_mu, num_points = {}, {}, {}, {}
-for pi_type in dens_type:
-    good_ssim[ pi_type ] = np.zeros( num_runs )
-    good_nrmse[ pi_type ] = np.zeros( num_runs )
-    good_mu[ pi_type ] = np.zeros( num_runs )
-    #num_points[ pi_type ] = []
-
+####### Initialize variables to keep track of ssim, mu, nrmse
+meas_val = { 'SSIM': {}, 'NRMSE': {}, 'MU': {} }
+for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
+    for pi_type in dens_type:
+        meas_val[ meas ][ pi_type ] = [] #np.zeros( num_runs )
 
 ####### Reconstruction
 
@@ -116,18 +114,15 @@ for pi_type in dens_type:
         )
     
     
-        cur_mu = [] # stores mu corresponding to the best ssim for every image
-        cur_ssims = [] # stores best ssim for every image
-        cur_nrmse = []
         
         for j in range( num_imgs ):
         
             img = img_list[ j ]
             kspace_obs = fourier_op.op( img )
         
-            cur_ssims.append( 0 )
-            cur_mu.append( mus[ 0 ] )
-            cur_nrmse.append( 1.0 )
+            cur_ssim = 0
+            cur_mu = mus[ 0 ]
+            cur_nrmse = 1.0
                 
             for mu in mus:
                 #print(mu)
@@ -142,24 +137,27 @@ for pi_type in dens_type:
                         #lambda_update_params = { "restart_strategy":"greedy", "s_greedy":1.1, "xi_restart":0.96 }
                 )
                 
-                if ssim( x_final, img ) > cur_ssims[ -1 ]:
-                    cur_ssims[ -1 ] = ssim( x_final, img )
-                    cur_mu[ -1 ] = mu
-                if nrmse( x_final, img ) < cur_nrmse[ -1 ]:
-                    cur_nrmse[ -1 ] = nrmse( x_final, img )
-
-        good_mu[ pi_type ][ i ] = np.mean( cur_mu )
-        good_ssim[ pi_type ][ i ] = np.mean( cur_ssims )
-        good_nrmse[ pi_type ][ i ] = np.mean( cur_nrmse )
+                if ssim( x_final, img ) > cur_ssim:
+                    cur_ssim = ssim( x_final, img )
+                    cur_mu = mu
+                if nrmse( x_final, img ) < cur_nrmse:
+                    cur_nrmse = nrmse( x_final, img )
+                    
+            meas_val[ 'MU' ][ pi_type ].append( cur_mu )
+            meas_val[ 'SSIM' ][ pi_type ].append( cur_ssim )
+            meas_val[ 'NRMSE' ][ pi_type ].append( cur_nrmse )
 
 
 ####### Display results
         
 print( "Reconstruction time:", time.time() - start_time )
 
-for pi_type in dens_type:
-    print( "Pi type:", pi_type, ", SSIM mean:", np.mean( good_ssim[ pi_type ] ),
-          ", SSIM std:", np.std( good_ssim[ pi_type ] ) )
-    print( "NRMSE mean:", np.mean( good_nrmse[ pi_type ] ), "NRMSE std:", np.std( good_nrmse[ pi_type ] )  )
-    print( "Mu mean:", np.mean( good_mu[ pi_type ] ), "mu std:", np.std( good_mu[ pi_type ] )  )
+data = []
 
+for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
+    for pi_type in dens_type:
+        data.append( [ meas, pi_type, meas_val[ meas ][ pi_type ][ i ] ] )
+                
+            
+df = pd.DataFrame( data = data, columns = [ 'meas', 'pi_type', 'd', 'c', 'val' ] )
+df.to_csv( 'out_data_'+str(img_size)+'.csv' )   
