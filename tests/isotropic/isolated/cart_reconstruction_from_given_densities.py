@@ -54,7 +54,7 @@ sub_sampling_rate = 0.2
 num_runs = 5 # number of runs of reconstruction algorithm
 num_imgs = 5 # number of images over which the result of reconstruction is averaged
 
-mus = np.logspace( -4, -6, 4 ) # regularisation parameter of the reconstruction algorithm
+#mus = np.logspace( -4, -6, 4 ) # regularisation parameter of the reconstruction algorithm
 #mus = [ 1e1 ]
 
 dens_type  = [ "rad_"+str(decay)+"_"+str(cutoff) for decay in decays for cutoff in cutoffs ] # types of densities to compute
@@ -95,6 +95,18 @@ meas_val = { 'SSIM': {}, 'NRMSE': {}, 'MU': {} }
 for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
     for pi_type in dens_type:
         meas_val[ meas ][ pi_type ] = [] #np.zeros( num_runs )
+        
+####### Setting up regularisation parameter
+mus = {}
+for pi_type in dens_type:
+    if not( pi_type in cs_dens_type ):
+        mus[ pi_type ] = np.logspace( -4, -6, 4 )
+    else:
+        if ( pi_type == 'inf' ) or ( pi_type == 'l' ):
+            mus[ pi_type ] = np.logspace( -4, -6, 4 )
+        else:
+            mus[ pi_type ] = np.logspace( -5, -7, 4 )
+
 
 ####### Reconstruction
 
@@ -130,7 +142,7 @@ for pi_type in dens_type:
             cur_mu = mus[ 0 ]
             cur_nrmse = 1.0
                 
-            for mu in mus:
+            for mu in mus[ pi_type ]:
                 #print(mu)
                 reconstructor.prox_op.weights = mu
             
@@ -172,6 +184,5 @@ for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
                 
             
 df = pd.DataFrame( data = data, columns = [ 'meas', 'pi_type', 'd', 'c', 'val' ] )
-print( df )
 df.to_csv( 'out_data_'+str(img_size)+'.csv' )   
 
