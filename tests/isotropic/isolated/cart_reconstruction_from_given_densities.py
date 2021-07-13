@@ -103,13 +103,13 @@ for pi_type in dens_type:
         mus[ pi_type ] = np.logspace( -4, -6, 4 )
     else:
         if pi_type == 'inf':
-        	mus[ pi_type ] = np.logspace( -4, -6, 4 )
+            	mus[ pi_type ] = np.logspace( -4, -6, 4 )
         elif pi_type == 'th_is':
-        	mus[ pi_type ] = np.logspace( -4, -7, 5 )
-	elif pi_type == 'th_anis':
-		mus[ pi_type ] = np.logspace( -4, -8, 6 )
-	else:
-		mus[ pi_type ] = np.logspace( -4, -7, 5 ) 
+            	mus[ pi_type ] = np.logspace( -4, -7, 5 )
+        elif pi_type == 'th_anis':
+            mus[ pi_type ] = np.logspace( -4, -8, 6 )
+        else:
+            mus[ pi_type ] = np.logspace( -4, -7, 5 ) 
 
 
 ####### Reconstruction
