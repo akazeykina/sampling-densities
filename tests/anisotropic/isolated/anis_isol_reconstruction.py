@@ -55,7 +55,7 @@ num_imgs = 5 # number of images over which the result of reconstruction is avera
 
 dens_type = [ "un", "inf", "th_is", "th_anis", "l" ]
 
-img_list = extract_images( "../../../brain_images/fastmri/file1000001.h5", "h5", 
+img_list = extract_images( "../../../brain_images/fastmri/file1000561.h5", "h5", 
                           img_size = img_size, num_images = num_imgs ) # images to reconstruct
 
 linear_op = WaveletN( wavelet_name = wavelet, nb_scale = level, padding_mode = 'periodization' )
