@@ -40,10 +40,11 @@ cutoff = 0.1 # cutoff for pi_rad
 
 ####### Distribution of sparsity coefficients
 
-img_s_distrib_list = extract_images( 
-        "../../../../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w",
-        img_size = img_size )
-#img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
+#img_s_distrib_list = extract_images( 
+        #"../../../../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w",
+        #img_size = img_size )
+img_s_distrib_list = extract_images( "../../../../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w",
+                                    img_size = img_size)
 #img_s_distrib_list = extract_images( "../brain_images/fastmri/file1000265.h5", "h5" )
 
 
@@ -70,10 +71,10 @@ pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_si
 ######## Create directory for pictures and for densities
 
 script_dir = os.path.dirname( __file__ )
-pics_dir = os.path.join( script_dir, 'pictures/prepare_densities/' )
+pics_dir = os.path.join( script_dir, 'pictures/prepare_densities/T1w/' )
 if not os.path.isdir( pics_dir ):
     os.makedirs( pics_dir )
-dens_dir = os.path.join( script_dir, 'pi_dens/' )
+dens_dir = os.path.join( script_dir, 'pi_dens/T1w/' )
 if not os.path.isdir( dens_dir ):
     os.makedirs( dens_dir )
         
@@ -86,7 +87,7 @@ for i in range( 5 ):
     ax = fig.add_subplot(1, 5, i + 1 )
     plt.imshow( reduce_img_size( img_size, img_s_distrib_list[ i * 2 + 1 ] ), cmap = 'gray' )
     
-plt.savefig( pics_dir+'oasis_T2w_images.png', bbox_inches='tight')
+plt.savefig( pics_dir+'oasis_T1w_images.png', bbox_inches='tight')
 #plt.show()
 
 ###### Prepare densities
