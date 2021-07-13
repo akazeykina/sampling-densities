@@ -34,7 +34,7 @@ from modopt.math.metrics import ssim
 from densities_calculation.utils import extract_images, nrmse
 
 
-img_size = 256
+img_size = 64
 n = img_size ** 2
 
 wavelet = 'sym4'
@@ -75,7 +75,7 @@ regularizer_op = SparseThreshold( Identity(), 2e-7, thresh_type = "soft" )
 #blocks_list = generate_blocks_list( scheme_type, block_type, img_size )
 #nb_samples = num_samples( sub_sampling_rate, scheme_type, blocks_list, [], blocks_list )
 
-
+####### Ranges of regularization parameter for different densities
 mus = {}
 for pi_type in dens_type:
     if pi_type == 'th_anis':
@@ -88,6 +88,17 @@ meas_val = { 'SSIM': {}, 'NRMSE': {}, 'MU': {} }
 for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
     for pi_type in dens_type:
         meas_val[ meas ][ pi_type ] = [] #np.zeros( num_runs )
+  
+####### Reference and reconstructed images for plotting      
+ref_imgs = {}
+reconstr_imgs = {}
+
+###### Creating directory for results
+
+script_dir = os.path.dirname( __file__ )
+rec_img_dir = os.path.join( script_dir, 'rec_imgs/' )
+if not os.path.isdir( rec_img_dir ):
+    os.makedirs( rec_img_dir )
 
 
 ####### Reconstruction
@@ -115,6 +126,7 @@ for pi_type in dens_type:
     for j in range( num_imgs ):
     
         img = img_list[ j ]
+        
         kspace_obs = fourier_op.op( img )
     
         cur_ssim = 0
@@ -137,15 +149,20 @@ for pi_type in dens_type:
             if ssim( x_final, img ) > cur_ssim:
                     cur_ssim = ssim( x_final, img )
                     cur_mu = mu
+                    cur_rec_img = x_final
             if nrmse( x_final, img ) < cur_nrmse:
                     cur_nrmse = nrmse( x_final, img )
+                    
+        if j == num_imgs // 2:
+            ref_imgs[ pi_type ] = img
+            reconstr_imgs[ pi_type ] = cur_rec_img
                     
         meas_val[ 'MU' ][ pi_type ].append( cur_mu )
         meas_val[ 'SSIM' ][ pi_type ].append( cur_ssim )
         meas_val[ 'NRMSE' ][ pi_type ].append( cur_nrmse )
 
 
-####### Display results
+####### Save results
         
 print( "Reconstruction time:", time.time() - start_time )
 
@@ -159,4 +176,17 @@ for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
             
 df = pd.DataFrame( data = data, columns = [ 'meas', 'pi_type', 'val' ] )
 df.to_csv( 'out_data_'+str(img_size)+'.csv' )   
+
+######## Save reference and reconstructed images
+for pi_type in dens_type:
+    np.save( "rec_imgs/ref_img_"+pi_type+"_"+str(img_size)+".npy", ref_imgs[ pi_type ] )
+    np.save( "rec_imgs/reconstr_img_"+pi_type+"_"+str(img_size)+".npy", reconstr_imgs[ pi_type ] )
+    
+    
+    
+    
+    
+    
+    
+    
 
