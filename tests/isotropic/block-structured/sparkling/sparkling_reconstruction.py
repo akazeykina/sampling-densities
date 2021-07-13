@@ -34,7 +34,7 @@ from modopt.math.metrics import ssim
 from densities_calculation.utils import extract_images, nrmse
 
 
-img_size = 64
+img_size = 256
 n = img_size ** 2
 
 wavelet = 'sym4'
@@ -78,11 +78,15 @@ regularizer_op = SparseThreshold( Identity(), 2e-7, thresh_type = "soft" )
 ####### Ranges of regularization parameter for different densities
 mus = {}
 for pi_type in dens_type:
-    if pi_type == 'th_anis':
-        mus[ pi_type ] = np.logspace( 2, 4, 5 )
-    else:
-        mus[ pi_type ] = np.logspace( 1, 3, 5 )
-
+    mus[ pi_type ] = np.logspace( 0, 2, 6 )
+# =============================================================================
+# For subsampling 20%
+#     if pi_type == 'th_anis':
+#         mus[ pi_type ] = np.logspace( 2, 3, 6 )
+#     else:
+#         mus[ pi_type ] = np.logspace( 1, 3, 6 )
+# 
+# =============================================================================
 ####### Initialize variables to keep track of ssim, mu, nrmse
 meas_val = { 'SSIM': {}, 'NRMSE': {}, 'MU': {} }
 for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
