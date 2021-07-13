@@ -112,6 +112,18 @@ for pi_type in dens_type:
             mus[ pi_type ] = np.logspace( -4, -7, 5 ) 
 
 
+####### Reference and reconstructed images for plotting      
+ref_imgs = {}
+reconstr_imgs = {}
+
+###### Creating directory for results
+
+script_dir = os.path.dirname( __file__ )
+rec_img_dir = os.path.join( script_dir, 'rec_imgs/' )
+if not os.path.isdir( rec_img_dir ):
+    os.makedirs( rec_img_dir )
+
+
 ####### Reconstruction
 
 print( "Reconstruction" )
@@ -162,8 +174,13 @@ for pi_type in dens_type:
                 if ssim( x_final, img ) > cur_ssim:
                     cur_ssim = ssim( x_final, img )
                     cur_mu = mu
+                    cur_rec_img = x_final
                 if nrmse( x_final, img ) < cur_nrmse:
                     cur_nrmse = nrmse( x_final, img )
+                    
+            if ( j == num_imgs // 2 ) and ( i == 0 ):
+                ref_imgs[ pi_type ] = img
+                reconstr_imgs[ pi_type ] = cur_rec_img  
                     
             meas_val[ 'MU' ][ pi_type ].append( cur_mu )
             meas_val[ 'SSIM' ][ pi_type ].append( cur_ssim )
@@ -188,5 +205,10 @@ for meas in [ 'SSIM', 'NRMSE', 'MU' ]:
                 
             
 df = pd.DataFrame( data = data, columns = [ 'meas', 'pi_type', 'd', 'c', 'val' ] )
-df.to_csv( 'out_data_'+str(img_size)+'.csv' )   
+df.to_csv( 'out_data_'+str(img_size)+'.csv' )  
+
+######## Save reference and reconstructed images
+for pi_type in dens_type:
+    np.save( "rec_imgs/ref_img_"+pi_type+"_"+str(img_size)+".npy", ref_imgs[ pi_type ] )
+    np.save( "rec_imgs/reconstr_img_"+pi_type+"_"+str(img_size)+".npy", reconstr_imgs[ pi_type ] ) 
 
