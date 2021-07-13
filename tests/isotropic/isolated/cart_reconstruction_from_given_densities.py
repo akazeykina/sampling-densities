@@ -37,7 +37,7 @@ from densities_calculation.calculate_densities import unravel_pi
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
 from reconstruction.fourier import masked_fourier_op
 
-img_size = 32
+img_size = 256
 n = img_size ** 2
 
 wavelet = 'sym4'
@@ -102,10 +102,14 @@ for pi_type in dens_type:
     if not( pi_type in cs_dens_type ):
         mus[ pi_type ] = np.logspace( -4, -6, 4 )
     else:
-        if ( pi_type == 'inf' ) or ( pi_type == 'l' ):
-            mus[ pi_type ] = np.logspace( -4, -6, 4 )
-        else:
-            mus[ pi_type ] = np.logspace( -5, -7, 4 )
+        if pi_type == 'inf':
+        	mus[ pi_type ] = np.logspace( -4, -6, 4 )
+        elif pi_type == 'th_is':
+        	mus[ pi_type ] = np.logspace( -4, -7, 5 )
+	elif pi_type == 'th_anis':
+		mus[ pi_type ] = np.logspace( -4, -8, 6 )
+	else:
+		mus[ pi_type ] = np.logspace( -4, -7, 5 ) 
 
 
 ####### Reconstruction
@@ -139,7 +143,7 @@ for pi_type in dens_type:
             kspace_obs = fourier_op.op( img )
         
             cur_ssim = 0
-            cur_mu = mus[ 0 ]
+            cur_mu = mus[ pi_type ][ 0 ]
             cur_nrmse = 1.0
                 
             for mu in mus[ pi_type ]:
