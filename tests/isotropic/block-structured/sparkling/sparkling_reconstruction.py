@@ -61,7 +61,9 @@ num_imgs = 10 # number of images over which the result of reconstruction is aver
 dens_type = [ "rad", "inf", "th_is", "th_anis", "l" ]
 #cs_dens_type = [ "l" ]
 
-img_list = extract_images( "../../../../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w",
+#img_list = extract_images( "../../../../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w",
+                          #img_size = img_size, num_images = num_imgs ) # images to reconstruct
+img_list = extract_images( "../../../../brain_images/T1w/sub-OAS30278_ses-d1325_run-02_T1w.nii", "nii", "T1w",
                           img_size = img_size, num_images = num_imgs ) # images to reconstruct
 
 linear_op = WaveletN( wavelet_name = wavelet, nb_scale = level, padding_mode = 'periodization' )
@@ -100,7 +102,7 @@ reconstr_imgs = {}
 ###### Creating directory for results
 
 script_dir = os.path.dirname( __file__ )
-rec_img_dir = os.path.join( script_dir, 'rec_imgs/' )
+rec_img_dir = os.path.join( script_dir, 'rec_imgs/T1w/' )
 if not os.path.isdir( rec_img_dir ):
     os.makedirs( rec_img_dir )
 
@@ -112,7 +114,7 @@ print( "Reconstruction" )
 start_time = time.time()
 for pi_type in dens_type:
     
-    kspace_loc = np.load( "kpoints/sparkling_"+pi_type+"_"+str(img_size)+".npy" ) 
+    kspace_loc = np.load( "kpoints/T1w/sparkling_"+pi_type+"_"+str(img_size)+".npy" ) 
     
     fourier_op = NonCartesianFFT( samples = kspace_loc, shape = ( img_size, img_size ), implementation = 'cpu' )
     
@@ -183,8 +185,8 @@ df.to_csv( 'out_data_'+str(img_size)+'.csv' )
 
 ######## Save reference and reconstructed images
 for pi_type in dens_type:
-    np.save( "rec_imgs/ref_img_"+pi_type+"_"+str(img_size)+".npy", ref_imgs[ pi_type ] )
-    np.save( "rec_imgs/reconstr_img_"+pi_type+"_"+str(img_size)+".npy", reconstr_imgs[ pi_type ] )
+    np.save( "rec_imgs/T1w/ref_img_"+pi_type+"_"+str(img_size)+".npy", ref_imgs[ pi_type ] )
+    np.save( "rec_imgs/T1w/reconstr_img_"+pi_type+"_"+str(img_size)+".npy", reconstr_imgs[ pi_type ] )
     
     
     
