@@ -13,10 +13,8 @@ sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
 from densities_calculation.mask import compute_mask
-from densities_calculation.s_distribution import avg_s_distribution
-from densities_calculation.calculate_densities import pi_rad, calculate_pi_blocks, unravel_pi
+from densities_calculation.calculate_densities import unravel_pi
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
-from densities_calculation.utils import extract_images, reduce_img_size
 
 
 img_size = 32
@@ -41,32 +39,22 @@ sub_sampling_rate = 0.2
 
 dens_type  = [ "rad", "inf", "th_is", "th_anis", "l" ] # types of densities to compute
 
-####### Distribution of sparsity coefficients
 
-#img_s_distrib_list = extract_images( "../brain_images/T2w/sub-OAS30008_sess-d0061_acq-TSE_T2w.nii", "nii", "T2w" )
-#img_s_distrib_list = extract_images( "../brain_images/T1w/sub-OAS30001_ses-d0129_run-01_T1w.nii", "nii", "T1w" )
-img_s_distrib_list = extract_images( "../../../brain_images/fastmri/file1000265.h5", "h5", img_size = img_size )
-
-
-s_distrib = avg_s_distribution( img_size, img_s_distrib_list, wavelet, level, sparsity )
-print("S distribution:")
-print( s_distrib )
 
 full_kspace = generate_full_scheme( scheme_type, block_type, img_size )
 blocks_list = generate_blocks_list( scheme_type, block_type, img_size )
 nb_samples = num_samples( sub_sampling_rate, scheme_type, blocks_list, [], blocks_list )
 
 
-####### Compute pi radial
-pi_rad = pi_rad( decay, cutoff, np.array( [ img_size, img_size ] ) )
 #
-####### Compute CS densities pi
-print( "Calculate pi, vector size:", img_size**2 )
+####### Load densities
 pi = {}
-#pi[ "rad" ] = pi_rad.flatten()
-pi[ "rad" ] = np.reshape( pi_rad, ( img_size **2, 1 ), order = 'C' )
-pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, scheme_type,
-  full_kspace, reg_type, cond, lam, wavelet, level, s_distrib, blocks_list )
+
+for pi_type in dens_type:
+    pi[ pi_type ] = np.load( "pi_dens/pi_per_block_"+pi_type+"_"+str(img_size)+".npy" )
+
+####### Unravel pi vectors
+pi_fl = unravel_pi( pi, dens_type, blocks_list, full_kspace.shape[ 0 ] )
 
 
 ####### Compute masks
