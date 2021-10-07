@@ -126,7 +126,7 @@ for i, pi_type in enumerate( dens_type ):
 plt.savefig( results_dir+'masks.png', bbox_inches='tight')
 #plt.show()
 
-print( fig.dpi )
+#print( fig.dpi )
 
 
 

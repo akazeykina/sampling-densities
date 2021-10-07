@@ -15,6 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(
 from densities_calculation.mask import compute_mask
 from densities_calculation.calculate_densities import unravel_pi
 from densities_calculation.generate_scheme import generate_full_scheme, generate_blocks_list, num_samples
+from densities_calculation.utils import extract_images, reduce_img_size
 
 
 img_size = 32
@@ -37,7 +38,18 @@ sparsity = 0.1 # sparsity level: assume that only s = 'sparsity' wavelets coeffi
 
 sub_sampling_rate = 0.2
 
-dens_type  = [ "rad", "inf", "th_is", "th_anis", "l" ] # types of densities to compute
+dens_type  = [ "rad" + "_" + str( decay ) + "_" + str( cutoff ), \
+              "inf", "th_is", "th_anis", "l" ] # types of densities to compute
+
+######## Create directory for pictures
+
+script_dir = os.path.dirname( __file__ )
+results_dir = os.path.join( script_dir, 'pictures/plot_densities_masks/' )
+if not os.path.isdir( results_dir ):
+    os.makedirs( results_dir )
+    
+########
+img_s_distrib_list = extract_images( "../../../brain_images/fastmri/file1000265.h5", "h5", img_size = img_size )
 
 
 
@@ -54,24 +66,20 @@ for pi_type in dens_type:
     pi[ pi_type ] = np.load( "pi_dens/pi_per_block_"+pi_type+"_"+str(img_size)+".npy" )
 
 ####### Unravel pi vectors
+print( pi[ "rad_4_0.1" ].shape )
+print( pi[ "inf" ].shape )
 pi_fl = unravel_pi( pi, dens_type, blocks_list, full_kspace.shape[ 0 ] )
 
 
+#
 ####### Compute masks
 pi_mask = {}
 for pi_type in dens_type:
-    pi_mask[ pi_type ] = np.reshape( compute_mask( pi[ pi_type ], nb_samples ), ( img_size, img_size ), order = 'C' )
+    pi_mask[ pi_type ] = compute_mask( pi[ pi_type ], nb_samples )
 #
-
+mask_fl = unravel_pi( pi_mask, dens_type, blocks_list, full_kspace.shape[ 0 ], dtype = bool ) 
 
 ##############################################################################
-
-######## Create directory for pictures
-
-script_dir = os.path.dirname( __file__ )
-results_dir = os.path.join( script_dir, 'pictures/plot_densities_masks/' )
-if not os.path.isdir( results_dir ):
-    os.makedirs( results_dir )
 
 
 
@@ -86,9 +94,6 @@ plt.savefig( results_dir+'fastmri_images.png', bbox_inches='tight')
 #plt.show()
 
 ###### Plot densities
-
-pi_fl = unravel_pi( pi, dens_type[ 1: ], blocks_list, full_kspace.shape[ 0 ] )
-pi_fl[ "rad" ] = pi[ "rad"].flatten()
 
 val_min = np.min( np.array( [ pi_fl[ pi_type ] for pi_type in dens_type ] ) )
 val_max = np.max( np.array( [ pi_fl[ pi_type ] for pi_type in dens_type ] ) )
@@ -111,9 +116,14 @@ plt.savefig( results_dir+'densities.png', bbox_inches='tight')
 fig = plt.figure( figsize = ( 30, 5 ) )
 
 for i, pi_type in enumerate( dens_type ):
-    ax = fig.add_subplot(1, 5, i + 1 )
-    plt.imshow(pi_mask[ pi_type ], cmap='gray' )
+    ax = fig.add_subplot( 1, 5, i + 1 )
+    ax.set_facecolor( 'k' )
+    ax.plot( full_kspace[ mask_fl[ pi_type ], 1 ], full_kspace[ mask_fl[ pi_type ], 0 ], color = 'w', marker = 's', 
+               markersize  = 5 * 32 / img_size, linestyle = '' )
+    ax.set_aspect( 'equal' )
+    ax.autoscale( tight = True )
+    ax.set_xlim( -0.5, 0.5 )
+    ax.set_ylim( -0.5, 0.5 )
     
 plt.savefig( results_dir+'masks.png', bbox_inches='tight')
 #plt.show()
-#

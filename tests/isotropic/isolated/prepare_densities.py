@@ -87,7 +87,7 @@ pi = {}
 for decay in decays:
     for cutoff in cutoffs:
         pi_radial = pi_rad( decay, cutoff, np.array( [ img_size, img_size ] ) )
-        pi[ "rad_"+str(decay)+"_"+str(cutoff) ] = pi_radial.flatten()
+        pi[ "rad_"+str(decay)+"_"+str(cutoff) ] = np.reshape( pi_radial, ( img_size **2 , 1 ) )
 
 
 pi[ "inf" ], pi[ "th_is" ], pi["th_anis"], pi["l"] = calculate_pi_blocks( img_size, scheme_type,
